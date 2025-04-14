@@ -29,4 +29,4 @@ jobs:
         run: npm install
 
       - name: 🧪 Run tests with coverage
-        run: node jest tests/mail-service.test.js --coverage
+        run: node node_modules/.bin/jest tests/mail-service.test.js --coverage
