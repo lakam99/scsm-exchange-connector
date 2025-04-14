@@ -58,10 +58,42 @@ async function sendEmail(to, subject, body) {
 }
 
 async function deleteEmail(emailObj) {
+    const messageId = emailObj.id;
 
+    const payload = {
+        destinationId: 'deleteditems' // This is the well-known folder ID for "Deleted Items"
+    };
+
+    const response = await fetch(`https://graph.microsoft.com/v1.0/me/messages/${messageId}/move`, {
+        method: 'POST',
+        headers: getHeaders(),
+        body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Error deleting email (moving to Deleted Items): ${response.status} ${response.statusText}\n${errorText}`);
+    }
+
+    return await response.json(); // returns the moved message object
+}
+
+async function getEmailsFromDeleted() {
+    const response = await fetch(`https://graph.microsoft.com/v1.0/me/mailFolders/deleteditems/messages`, {
+        headers: getHeaders()
+    });
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Error fetching deleted emails: ${response.status} ${response.statusText}\n${errorText}`);
+    }
+
+    return await response.json();
 }
 
 module.exports = {
     getEmails,
-    sendEmail
+    sendEmail,
+    deleteEmail,
+    getEmailsFromDeleted
 };
