@@ -2,7 +2,9 @@ const { getEmails, sendEmail } = require('../mail-service.js');
 
 // Manually stub config instead of using jest.mock
 jest.mock('../config.js', () => ({
-  config: { accessToken: 'fake-token' }
+  accessToken: 'fake-token',
+  folderName: 'Inbox',
+  testRecipient: 'test@mail.com'
 }));
 
 // Mock global fetch for Node >=18
@@ -24,7 +26,7 @@ describe('Mail Service (Unit)', () => {
     const emails = await getEmails();
 
     expect(fetch).toHaveBeenCalledWith(
-      'https://graph.microsoft.com/v1.0/me/messages',
+      'https://graph.microsoft.com/v1.0/me/mailFolders(\'Inbox\')/messages',
       expect.objectContaining({
         headers: expect.objectContaining({
           Authorization: `Bearer fake-token`
