@@ -3,10 +3,8 @@ param (
   [string]$Email
 )
 
-$p = @{ComputerName = 'ottansm1'}
-
 # Example: get a user in SCSM by email
-$user = Get-SCSMObject -Class (Get-SCSMClass -Name 'System.Domain.User' @p) @p | Where-Object { $_.UPN -eq $Email }
+$user = Get-SCSMObject -Class (Get-SCSMClass -Name 'System.Domain.User' ) | Where-Object { $_.UPN -eq $Email }
 
 # Return simplified user object
 if ($user) {
