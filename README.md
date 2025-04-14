@@ -102,10 +102,10 @@ node_modules/.bin/jest tests/mail-service.IT.test.js
 
 ---
 
-## 🧑‍💻 Author
+## 🧑‍💻 Authors
 
-**Arkam Mazrui**  
-**Yaseen Choukri**
+**Arkam Mazrui** – arkam.mazrui@nserc-crsng.gc.ca  
+**Yaseen Choukri** – yaseen.choukri@nserc-crsng.gc.ca
 
 ---
 
