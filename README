@@ -1,6 +1,3 @@
-### 📄 `README.md`
-
-```md
 # SCSM Exchange Connector (Microsoft Graph Edition)
 
 A custom-built Exchange Connector for **System Center Service Manager (SCSM) 2019**, powered by the **Microsoft Graph API**.
@@ -115,4 +112,3 @@ node_modules/.bin/jest tests/mail-service.IT.test.js
 ## 📜 License
 
 MIT License. Use freely and improve it if you can.
-```
