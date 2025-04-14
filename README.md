@@ -73,12 +73,7 @@ npm install
 
 ### Run all tests:
 ```bash
-npm test
-```
-
-### Run with code coverage:
-```bash
-npm run test:cov
+npm run test
 ```
 
 ### Run unit tests only:
