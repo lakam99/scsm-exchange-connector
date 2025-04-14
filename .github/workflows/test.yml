@@ -1,10 +1,16 @@
 name: Node.js CI
 
 on:
+  # ✅ Run on every commit to any branch
   push:
-    branches: [ main ]
+    branches: [ "**" ]
+
+  # ✅ Run on every pull request to any branch
   pull_request:
-    branches: [ main ]
+    branches: [ "**" ]
+
+  # ✅ Enable manual trigger via GitHub Actions UI
+  workflow_dispatch:
 
 jobs:
   test:
@@ -23,10 +29,4 @@ jobs:
         run: npm install
 
       - name: 🧪 Run tests with coverage
-        run: npm run test
-
-      # - name: 📤 Upload coverage report
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: coverage-report
-      #     path: coverage/lcov-report
+        run: npm test -- --coverage
