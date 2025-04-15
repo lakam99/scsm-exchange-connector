@@ -1,4 +1,4 @@
-const { getEmails, sendEmail } = require('../mail-service.js');
+const { getEmails, sendEmail, getEmail } = require('../mail-service.js');
 
 // Manually stub config instead of using jest.mock
 jest.mock('../config.js', () => ({
@@ -78,4 +78,30 @@ describe('Mail Service (Unit)', () => {
 
     await expect(sendEmail('a@b.com', 'sub', 'body')).rejects.toThrow(/Error sending email: 400 Bad Request/);
   });
+
+  it('should fetch and return the .eml buffer of an email', async () => {
+    const fakeBuffer = Buffer.from('Raw email content');
+    fetch.mockResolvedValue({
+      ok: true,
+      arrayBuffer: () => Promise.resolve(fakeBuffer)
+    });
+
+    const messageId = 'test-msg-id';
+    const result = await getEmail(messageId);
+
+    expect(fetch).toHaveBeenCalledWith(
+      `https://graph.microsoft.com/v1.0/me/messages/${messageId}/$value`,
+      expect.objectContaining({
+        method: 'GET',
+        headers: expect.objectContaining({
+          'Authorization': expect.any(String),
+          'Accept': 'application/octet-stream'
+        })
+      })
+    );
+
+    expect(result).toBeInstanceOf(Buffer);
+    expect(result.toString()).toBe('Raw email content');
+  });
+
 });

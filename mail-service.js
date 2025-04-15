@@ -57,6 +57,26 @@ async function sendEmail(to, subject, body) {
     return true;
 }
 
+async function getEmail(messageId) {
+    const url = `https://graph.microsoft.com/v1.0/me/messages/${messageId}/$value`;
+
+    const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${config.accessToken}`,
+            'Accept': 'application/octet-stream'
+        }
+    });
+
+    if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(`Failed to fetch email: ${response.status} ${response.statusText}\n${errText}`);
+    }
+
+    const buffer = await response.arrayBuffer(); // MIME format
+    return Buffer.from(buffer); // Return as Buffer for writing to disk or base64 encoding
+}
+
 async function deleteEmail(emailObj) {
     const messageId = emailObj.id;
 
@@ -95,5 +115,6 @@ module.exports = {
     getEmails,
     sendEmail,
     deleteEmail,
-    getEmailsFromDeleted
+    getEmailsFromDeleted,
+    getEmail
 };

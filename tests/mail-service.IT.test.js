@@ -1,5 +1,7 @@
-const { getEmails, sendEmail, deleteEmail, getEmailsFromDeleted } = require('../mail-service.js');
+const { getEmails, sendEmail, deleteEmail, getEmailsFromDeleted, getEmail } = require('../mail-service.js');
 const config = require('../config.js');
+const path = require('path');
+const fs = require('fs');
 
 jest.setTimeout(15000);
 
@@ -37,4 +39,17 @@ describe('Mail Service (Integration)', () => {
     const found = deleteditem.value.find(e => e.id === deletedEmail.id);
     expect(found).toBeDefined(); // Email should exist in Deleted Items
   });
+
+  test('should download and save the email as .eml', async () => {
+    const messageId = config.testMessageId;
+    const outputPath = path.join(__dirname, 'downloaded-test.eml');
+
+    const emlBuffer = await getEmail(messageId);
+    expect(emlBuffer).toBeInstanceOf(Buffer);
+    expect(emlBuffer.length).toBeGreaterThan(0);
+
+    fs.writeFileSync(outputPath, emlBuffer);
+    expect(fs.existsSync(outputPath)).toBe(true);
+  });
+  
 });
