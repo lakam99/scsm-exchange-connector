@@ -30,9 +30,37 @@ async function createUser(name, email) {
   return result.success === true;
 }
 
-async function createTicket(title, description, affectedUserId, templateName) {
-  const script = path.join(__dirname, 'scripts/create-ticket.ps1');
-  return await runPowerShell(script, ['-Title', title, '-Description', description, '-affectedUserId', affectedUserId, '-templateName', templateName]);
+async function createTicket(options) {
+  const {
+    title,
+    description,
+    affectedUserId,
+    templateName = "Post Awards Reconciliation Template SRQ",
+    emailSubject,
+    emailPath,
+    emailFrom,
+    emailId
+   } = options;
+
+  const scriptPath = path.join(__dirname, 'scripts', 'create-ticket.ps1');
+  
+  const args = [
+    '-Title', title,
+    '-Description', description,
+    '-affectedUserId', affectedUserId,
+    '-templateName', templateName,
+    '-EmailSubject', emailSubject,
+    '-EmailMimePath', emailPath,
+    '-EmailFrom', emailFrom,
+    '-ConversationId', emailId
+  ]
+
+  try {
+    const result = await runPowerShell(scriptPath, args);
+    return result; // assuming your script returns compressed JSON
+  } catch (err) {
+    throw new Error(`Failed to create ticket: ${err.message}`);
+  }
 }
 
 module.exports = {

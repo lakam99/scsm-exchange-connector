@@ -7,13 +7,16 @@
     # Email-specific parameters from Graph API object
     [string]$EmailSubject    = "emailsub",
     [string]$EmailBodyHtml   = "emailsubhtml",
+    [string]$EmailMimePath = "./../tests/temp/test-1744750233801.eml",
     [string]$EmailFrom       = "yaseen.choukri@outlook.ca",
     [string]$ConversationId  = ""
 )
 
+cd $PSScriptRoot
+
 # --- Import Modules ---
-Import-Module SMLets
-Import-Module "D:\Program Files\Microsoft System Center\Service Manager\PowerShell\System.Center.Service.Manager.psd1"
+Import-Module SMLets 2>$null
+Import-Module "D:\Program Files\Microsoft System Center\Service Manager\PowerShell\System.Center.Service.Manager.psd1" 2>$null
 
 # --- Helper Functions ---
 
@@ -80,49 +83,49 @@ function Attach-EmailToWorkItem {
     param (
         [object]$workItem,
         [string]$EmailSubject,
-        [string]$EmailBodyHtml,
+        [string]$EmailMimePath,     # <-- full .eml MIME
         [string]$EmailFrom,
         [string]$ConversationId
     )
-    if (-not $EmailBodyHtml) { return }
-    
+
+    if (-not $EmailMimePath) { return }
+
     # Get class and relationship definitions
     $fileAttachmentClass = Get-SCSMClass -Name "System.FileAttachment"
     $attachmentRelClass  = Get-SCSMRelationshipClass -Name "System.WorkItemHasFileAttachment"
-    
-    # Ensure we have a management group reference
+
+    # Management group
     if (-not $ManagementGroup) {
         $ManagementGroup = New-Object Microsoft.EnterpriseManagement.EnterpriseManagementGroup "localhost"
     }
-    
-    # Convert HTML content to a byte array
-    $utf8       = [System.Text.Encoding]::UTF8
-    $emailBytes = $utf8.GetBytes($EmailBodyHtml)
-    
-    # Create a MemoryStream from the byte array
-    $stream = New-Object System.IO.MemoryStream
-    $stream.Write($emailBytes, 0, $emailBytes.Length)
+
+    # Convert MIME content to byte stream
+    # Read MIME content from file
+    $absolutePath = Resolve-Path -Path $EmailMimePath -ErrorAction Stop
+    $emlBytes = [System.IO.File]::ReadAllBytes($absolutePath)
+    $stream   = New-Object System.IO.MemoryStream
+    $stream.Write($emlBytes, 0, $emlBytes.Length)
     $stream.Seek(0, 'Begin') | Out-Null
-    
-    # Create the attachment using the CreatableEnterpriseManagementObject method
+
+
+    # Create attachment object
     $attachment = New-Object Microsoft.EnterpriseManagement.Common.CreatableEnterpriseManagementObject($ManagementGroup, $fileAttachmentClass)
-    $attachment.Item($fileAttachmentClass, "Id").Value = [Guid]::NewGuid().ToString()
-    $attachment.Item($fileAttachmentClass, "DisplayName").Value = if ($EmailSubject) { "$EmailSubject.html" } else { "GraphEmail.html" }
-    
-    # Use the same system as before to save the thread (conversation) ID.
-    if (-not [string]::IsNullOrWhiteSpace($ConversationId)) {
+
+    $attachment.Item($fileAttachmentClass, "Id").Value          = [Guid]::NewGuid().ToString()
+    $attachment.Item($fileAttachmentClass, "DisplayName").Value = if ($EmailSubject) { "$EmailSubject.eml" } else { "GraphEmail.eml" }
+    $attachment.Item($fileAttachmentClass, "Extension").Value   = ".eml"
+    $attachment.Item($fileAttachmentClass, "Size").Value        = $emlBytes.Length
+    $attachment.Item($fileAttachmentClass, "AddedDate").Value   = (Get-Date).ToUniversalTime()
+    $attachment.Item($fileAttachmentClass, "Content").Value     = $stream
+
+    # Store the conversation/thread ID for later tracking
+    if ($ConversationId) {
         $attachment.Item($fileAttachmentClass, "Description").Value = "ExchangeConversationID:$ConversationId;"
-    }
-    else {
+    } else {
         $attachment.Item($fileAttachmentClass, "Description").Value = "Attached email from $EmailFrom"
     }
-    
-    $attachment.Item($fileAttachmentClass, "Extension").Value = ".html"
-    $attachment.Item($fileAttachmentClass, "Size").Value = $emailBytes.Length
-    $attachment.Item($fileAttachmentClass, "AddedDate").Value = (Get-Date).ToUniversalTime()
-    $attachment.Item($fileAttachmentClass, "Content").Value = $stream
-    
-    # Obtain the work item projection and add the attachment
+
+    # Link to work item
     $WorkItemProjection = Get-SCSMObjectProjection "System.WorkItem.Projection" -Filter "id -eq '$($workItem.Id)'"
     $WorkItemProjection.__base.Add($attachment, $attachmentRelClass.Target)
     $WorkItemProjection.__base.Commit()
@@ -150,7 +153,13 @@ if ($affectedUserId) {
 }
 
 # Attach the Graph email HTML to the new work item (including the thread/conversation ID)
-Attach-EmailToWorkItem -workItem $newSR -EmailSubject $EmailSubject -EmailBodyHtml $EmailBodyHtml -EmailFrom $EmailFrom -ConversationId $ConversationId
+Attach-EmailToWorkItem `
+    -workItem $newSR `
+    -EmailSubject $EmailSubject `
+    -EmailMimePath $EmailMimePath `
+    -EmailFrom $EmailFrom `
+    -ConversationId $ConversationId
+
 
 # Output a summary of the new work item as JSON
 @{
