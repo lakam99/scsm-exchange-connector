@@ -6,7 +6,6 @@
 
     # Email-specific parameters from Graph API object
     [string]$EmailSubject    = "emailsub",
-    [string]$EmailBodyHtml   = "emailsubhtml",
     [string]$EmailMimePath = "./../tests/temp/test-1744750233801.eml",
     [string]$EmailFrom       = "yaseen.choukri@outlook.ca",
     [string]$ConversationId  = ""

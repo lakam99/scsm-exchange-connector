@@ -2,7 +2,7 @@ const config = {
     workflows: [
         {
             name: "Test Workflow",
-            email: "/me", // /users/{id} is the alternative
+            email: "me", // /users/{id} is the alternative
             newTicketTemplate: "Post Awards Reconciliation Template SRQ",
             updatedTicketTemplate: "",
             newTicketNotificationTemplatePath: "templates/default-notification-template.html",

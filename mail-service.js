@@ -11,8 +11,51 @@ function getHeaders() {
     }
 }
 
-async function getEmails() {
-    const response = await fetch(`https://graph.microsoft.com/v1.0/me/mailFolders('${config.folderName}')/messages`, {
+/**
+ * @typedef {Object} EmailAddress
+ * @property {string} name - The display name of the sender/recipient.
+ * @property {string} address - The email address.
+ */
+
+/**
+ * @typedef {Object} EmailMessage
+ * @property {string} id
+ * @property {string} subject
+ * @property {string} bodyPreview
+ * @property {string} createdDateTime
+ * @property {string} receivedDateTime
+ * @property {string} sentDateTime
+ * @property {boolean} hasAttachments
+ * @property {Object} body
+ * @property {string} body.contentType
+ * @property {string} body.content
+ * @property {{ emailAddress: EmailAddress }} sender
+ * @property {{ emailAddress: EmailAddress }} from
+ * @property {{ emailAddress: EmailAddress }[]} toRecipients
+ * @property {{ emailAddress: EmailAddress }[]} ccRecipients
+ * @property {{ emailAddress: EmailAddress }[]} bccRecipients
+ * @property {{ emailAddress: EmailAddress }[]} replyTo
+ * @property {string} webLink
+ * @property {string} inferenceClassification
+ * @property {string} importance
+ * @property {Object} flag
+ * @property {string} flag.flagStatus
+ */
+
+/**
+ * @typedef {Object} GetEmailsResponse
+ * @property {string} "@odata.context"
+ * @property {EmailMessage[]} value
+ */
+
+/**
+ * Fetches emails from the user's inbox.
+ * 
+ * @param {string} [user='me'] - The user ID or 'me' for the current authenticated user.
+ * @returns {Promise<GetEmailsResponse>} - A promise that resolves to the email messages.
+ */
+async function getEmails(user='me') {
+    const response = await fetch(`https://graph.microsoft.com/v1.0/${user}/mailFolders('${config.folderName}')/messages`, {
         headers: getHeaders()
     });
 
@@ -24,7 +67,7 @@ async function getEmails() {
     return await response.json();
 }
 
-async function sendEmail(to, subject, body) {
+async function sendEmail(user='me', to, subject, body) {
     const payload = {
         message: {
             subject,
@@ -43,7 +86,7 @@ async function sendEmail(to, subject, body) {
         saveToSentItems: 'true'
     };
 
-    const response = await fetch('https://graph.microsoft.com/v1.0/me/sendMail', {
+    const response = await fetch(`https://graph.microsoft.com/v1.0/${user}/sendMail`, {
         method: 'POST',
         headers: getHeaders(),
         body: JSON.stringify(payload)
@@ -57,8 +100,8 @@ async function sendEmail(to, subject, body) {
     return true;
 }
 
-async function getEmail(messageId) {
-    const url = `https://graph.microsoft.com/v1.0/me/messages/${messageId}/$value`;
+async function getEmail(user='me', messageId) {
+    const url = `https://graph.microsoft.com/v1.0/${user}/messages/${messageId}/$value`;
 
     const response = await fetch(url, {
         method: 'GET',
@@ -77,14 +120,14 @@ async function getEmail(messageId) {
     return Buffer.from(buffer); // Return as Buffer for writing to disk or base64 encoding
 }
 
-async function deleteEmail(emailObj) {
+async function deleteEmail(user='me', emailObj) {
     const messageId = emailObj.id;
 
     const payload = {
         destinationId: 'deleteditems' // This is the well-known folder ID for "Deleted Items"
     };
 
-    const response = await fetch(`https://graph.microsoft.com/v1.0/me/messages/${messageId}/move`, {
+    const response = await fetch(`https://graph.microsoft.com/v1.0/${user}/messages/${messageId}/move`, {
         method: 'POST',
         headers: getHeaders(),
         body: JSON.stringify(payload)
@@ -98,8 +141,8 @@ async function deleteEmail(emailObj) {
     return await response.json(); // returns the moved message object
 }
 
-async function getEmailsFromDeleted() {
-    const response = await fetch(`https://graph.microsoft.com/v1.0/me/mailFolders/deleteditems/messages`, {
+async function getEmailsFromDeleted(user='me') {
+    const response = await fetch(`https://graph.microsoft.com/v1.0/${user}/mailFolders/deleteditems/messages`, {
         headers: getHeaders()
     });
 

@@ -18,6 +18,22 @@ function runPowerShell(scriptPath, args = []) {
   });
 }
 
+/**
+ * Represents a simplified user object returned from SCSM.
+ * 
+ * @typedef {Object} ScsmUser
+ * @property {string} Id - The GUID of the user.
+ * @property {string} DisplayName - The display name of the user.
+ * @property {string} UPN - The User Principal Name (email) of the user.
+ */
+
+/**
+ * Fetches a user from SCSM (System Center Service Manager) by name and email.
+ *
+ * @param {string} name - The name of the user to search for (not directly used in filtering).
+ * @param {string} email - The email address (UPN) to match the user.
+ * @returns {Promise<ScsmUser|{}>} A promise resolving to the matched user object, or an empty object if no user is found.
+ */
 async function getUser(name, email) {
   const script = path.join(__dirname, 'scripts/get-user.ps1');
   // Pass the parameters without extra quotes
@@ -30,6 +46,40 @@ async function createUser(name, email) {
   return result.success === true;
 }
 
+/**
+ * 
+ * @param {string} emailId 
+ * @returns {Array<{Id: string, Status: string, CreatedDate: string}>}
+ */
+async function getTicketsByEmailId(emailId) {
+  return null;
+}
+
+async function updateTicketEmailAndAddComment(ticketId, path_to_new_email) {
+  return true;
+}
+
+/**
+ * Options for creating a support ticket.
+ * 
+ * @typedef {Object} CreateTicketOptions
+ * @property {string} title - The title of the support ticket.
+ * @property {string} description - A detailed description of the issue.
+ * @property {string} affectedUserId - The ID of the user affected by the issue.
+ * @property {string} [templateName="Post Awards Reconciliation Template SRQ"] - The name of the ticket template to use.
+ * @property {string} emailSubject - The subject line for the email.
+ * @property {string} emailPath - The full path to the email MIME file.
+ * @property {string} emailFrom - The sender address of the email.
+ * @property {string} emailId - The ID or conversation ID of the related email.
+ */
+
+/**
+ * Creates a support ticket by invoking a PowerShell script with provided options.
+ * 
+ * @param {CreateTicketOptions} options - The configuration and data for the new ticket.
+ * @returns {Promise<any>} - A promise resolving to the result of the ticket creation (usually JSON).
+ * @throws {Error} - Throws if the PowerShell script fails to execute.
+ */
 async function createTicket(options) {
   const {
     title,
@@ -66,5 +116,7 @@ async function createTicket(options) {
 module.exports = {
   getUser,
   createUser,
-  createTicket
+  createTicket,
+  getTicketsByEmailId,
+  updateTicketEmailAndAddComment
 };
