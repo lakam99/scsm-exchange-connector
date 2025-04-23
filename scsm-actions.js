@@ -52,11 +52,15 @@ async function createUser(name, email) {
  * @returns {Array<{Id: string, Status: string, CreatedDate: string}>}
  */
 async function getTicketsByEmailId(emailId) {
-  return null;
+  const script = path.join(__dirname, 'scripts/get-tickets-by-emailid.ps1');
+  const result = await runPowerShell(script, ['-EmailId', emailId]);
+  return result;
 }
 
-async function updateTicketEmailAndAddComment(ticketId, path_to_new_email) {
-  return true;
+async function updateTicketEmailAndAddComment(ticketId, pathToNewEmail) {
+  const script = path.join(__dirname, 'scripts/update-ticket-email.ps1');
+  const result = await runPowerShell(script, ['-TicketId', ticketId, '-EmailMimePath', pathToNewEmail]);
+  return result.success === true;
 }
 
 /**

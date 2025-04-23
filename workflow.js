@@ -1,5 +1,5 @@
 const { getEmails } = require('./mail-service');
-const { getTicketsByEmailId, createTicket, getUser, updateTicketEmailAndAddComment } = require('./scsm-actions');
+const { getTicketsByEmailId, createTicket, getUser, updateTicketEmailAndAddComment, createUser} = require('./scsm-actions');
 const config = require('./workflow-config');
 const fs = require('fs');
 
@@ -15,7 +15,7 @@ config.workflows.forEach(async (workflow) => {
                     createTicket({
                         "title": email.subject,
                         "description": email.body,
-                        "templateName": workflow.newTicketTemplate,
+                        "templateName": config.workflows[1].newTicketTemplate,
                         "affectedUserId": user.Id,
                         "emailId": email.id
                     })
@@ -24,7 +24,12 @@ config.workflows.forEach(async (workflow) => {
                 }
             }
         } else {
-            const user = await getUser(email.from.emailAddress.name, email.from.emailAddress.address);
+            
+            let user = await getUser(email.from.emailAddress.name, email.from.emailAddress.address);
+            
+            if(!user){
+                user = await createUser(email.from.emailAddress.name, email.from.emailAddress.address)
+            }
             createTicket({
                 "title": email.subject,
                 "description": email.body,
@@ -34,6 +39,13 @@ config.workflows.forEach(async (workflow) => {
             })
         }
     })
+
+// step 2 send notification
+
+
+// step 3 delete email from the inbox
+
+
     //get inbox
     //for email in inbox
     //is there a FileAttachment object in SCSM with this email id?
