@@ -57,9 +57,16 @@ async function getTicketsByEmailId(emailId) {
   return result;
 }
 
+//TODO: Write IT Test verifying using getComment
 async function updateTicketEmailAndAddComment(ticketId, pathToNewEmail) {
   const script = path.join(__dirname, 'scripts/update-ticket-email.ps1');
   const result = await runPowerShell(script, ['-TicketId', ticketId, '-EmailMimePath', pathToNewEmail]);
+  return result.success === true;
+}
+
+async function getComment(ticketId) {
+  const script = path.join(__dirname, 'scripts/get-comment.ps1');
+  const result = await runPowerShell(script, ['-TicketId', ticketId]);
   return result.success === true;
 }
 
@@ -122,5 +129,6 @@ module.exports = {
   createUser,
   createTicket,
   getTicketsByEmailId,
-  updateTicketEmailAndAddComment
+  updateTicketEmailAndAddComment,
+  getComment
 };

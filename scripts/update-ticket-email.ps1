@@ -16,6 +16,14 @@ try {
   $commentClass = Get-SCSMClass -Name "System.WorkItem.TroubleTicket.AnalystCommentLog"
   $relClass = Get-SCSMRelationshipClass -Name "System.WorkItemHasComment"   
 
+ # Remove existing .eml attachments
+    $existingAttachments = Get-SCSMRelatedObject -SMObject $srq -Relationship $attachmentRelClass |
+          Where-Object { $_.Extension -eq ".eml" }
+    
+    foreach ($existing in $existingAttachments) {
+            Remove-SCSMObject -SMObject $existing -Force
+        }
+
   $bytes = [System.IO.File]::ReadAllBytes($EmailMimePath)
   $stream = New-Object System.IO.MemoryStream
   $stream.Write($bytes, 0, $bytes.Length)
