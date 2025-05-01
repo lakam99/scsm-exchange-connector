@@ -15,7 +15,7 @@ const config = require('./workflow-config.js');
   for (const wf of config.workflows) {
     try {
       // Pull new messages
-       const emails = (await getEmails(workflow.email)).value;
+      const { value: emails } = await getEmails(wf.email);
 
       for (const email of emails) {
         // 1) dump the MIME blob to disk
