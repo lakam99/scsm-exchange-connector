@@ -8,7 +8,7 @@
     [string]$EmailSubject    = "emailsub",
     [string]$EmailMimePath = "./../tests/temp/test-1744750233801.eml",
     [string]$EmailFrom       = "yaseen.choukri@outlook.ca",
-    [string]$ConversationId  = ""
+    [string]$ConversationId  = "AQQkADAwATMwMAExLTkxYjAtOTEwNy0wMAItMDAKABAA9sMfmhgpZ06mlhmXrymTjQ=="
 )
 
 cd $PSScriptRoot

@@ -52,7 +52,7 @@ try {
     $proj.__base.Add($comment, $relClass.Target)
     $proj.__base.Commit()  
 
-  @{ success = $true } | ConvertTo-Json -Compress
+  @{ success = $true; Title=($projection.Title); Id = $TicketId} | ConvertTo-Json -Compress
 }
 catch {
   @{ success = $false; error = $_.Exception.Message } | ConvertTo-Json -Compress

@@ -58,7 +58,12 @@ async function getTicketsByEmailId(emailId) {
   const result = await runPowerShell(script, ['-EmailId', emailId]);
   return result.success;
 }
-
+/**
+ * * Updates a ticket's email and adds a comment by invoking a PowerShell script.
+ * @param {string} ticketId - The ID of the ticket to update.
+ * @param {string} pathToNewEmail - The full path to the new email MIME file. 
+ * @returns {Promise<WorkItem>}
+ */
 //1 TODO: Write IT Test verifying using getComment in the same test for both these functions
 async function updateTicketEmailAndAddComment(ticketId, pathToNewEmail) {
   const script = path.join(__dirname, 'scripts/update-ticket-email.ps1');
@@ -87,10 +92,18 @@ async function getComment(ticketId) {
  */
 
 /**
+ * Work Item type definition.
+ * 
+ * @typedef {Object} WorkItem
+ * @property {string} Id - The ID of the work item.
+ * @property {string} title - The title of the support ticket.
+ */
+
+/**
  * Creates a support ticket by invoking a PowerShell script with provided options.
  * 
  * @param {CreateTicketOptions} options - The configuration and data for the new ticket.
- * @returns {Promise<any>} - A promise resolving to the result of the ticket creation (usually JSON).
+ * @returns {Promise<WorkItem>} - A promise resolving to the result of the ticket creation (usually JSON).
  * @throws {Error} - Throws if the PowerShell script fails to execute.
  */
 async function createTicket(options) {
