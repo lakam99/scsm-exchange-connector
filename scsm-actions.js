@@ -51,23 +51,25 @@ async function createUser(name, email) {
  * @param {string} emailId 
  * @returns {Array<{Id: string, Status: string, CreatedDate: string}>}
  */
+
+// 2nd powershell and unit test and it
 async function getTicketsByEmailId(emailId) {
   const script = path.join(__dirname, 'scripts/get-tickets-by-emailid.ps1');
   const result = await runPowerShell(script, ['-EmailId', emailId]);
-  return result;
+  return result.success;
 }
 
-//TODO: Write IT Test verifying using getComment
+//1 TODO: Write IT Test verifying using getComment in the same test for both these functions
 async function updateTicketEmailAndAddComment(ticketId, pathToNewEmail) {
   const script = path.join(__dirname, 'scripts/update-ticket-email.ps1');
   const result = await runPowerShell(script, ['-TicketId', ticketId, '-EmailMimePath', pathToNewEmail]);
-  return result.success === true;
+  return result.success;
 }
 
 async function getComment(ticketId) {
   const script = path.join(__dirname, 'scripts/get-comment.ps1');
   const result = await runPowerShell(script, ['-TicketId', ticketId]);
-  return result.success === true;
+  return result.success;
 }
 
 /**

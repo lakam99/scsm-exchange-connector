@@ -1,5 +1,5 @@
 param(
-  [string]$TicketId = "SRQ130537",
+  [string]$TicketId = "SRQ130667",
   [string]$EmailMimePath = "C:\Users\scsmAdmin\Documents\scsm-exchange-connector\tests\temp\test-1744751298029.eml"
 )
 
@@ -12,7 +12,7 @@ try {
 
   $fileAttachmentClass = Get-SCSMClass -Name "System.FileAttachment"
   $attachmentRelClass = Get-SCSMRelationshipClass -Name "System.WorkItemHasFileAttachment"
-  $managementGroup = New-Object Microsoft.EnterpriseManagement.EnterpriseManagementGroup "localhost"
+  $managementGroup = New-Object Microsoft.EnterpriseManagement.EnterpriseManagementGroup "Ottansm1"
   $commentClass = Get-SCSMClass -Name "System.WorkItem.TroubleTicket.AnalystCommentLog"
   $relClass = Get-SCSMRelationshipClass -Name "System.WorkItemHasComment"   
 
@@ -38,7 +38,7 @@ try {
   $attachment.Item($fileAttachmentClass, "Content").Value = $stream
   $attachment.Item($fileAttachmentClass, "Description").Value = "Appended email update via API"
 
-  $comment = New-Object Microsoft.EnterpriseManagement.Common.CreatableEnterpriseManagementObject($mgmtGroup, $commentClass)
+  $comment = New-Object Microsoft.EnterpriseManagement.Common.CreatableEnterpriseManagementObject($managementGroup, $commentClass)
   $comment[$commentClass, "Id"].Value          = [Guid]::NewGuid().ToString()
   $comment[$commentClass, "EnteredDate"].Value = (Get-Date).ToUniversalTime()
   $comment[$commentClass, "EnteredBy"].Value   = "SCSM API Integration"
