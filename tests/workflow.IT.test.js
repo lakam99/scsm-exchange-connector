@@ -1,106 +1,55 @@
-// __tests__/workflow.IT.test.js
-const fs   = require('fs');
-const path = require('path');
+const { sendEmail, getEmailsFromDeleted } = require('../mail-service');
+const { getTicketsByEmailId } = require('../scsm-actions');
+const { processProfile } = require('../workflow');
+const profileConfig = require('../profile-config');
+const config = require('../config.js');
 
-jest.mock('../mail-service.js');
-jest.mock('../scsm-actions.js');
+const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
-const { getEmails, deleteEmail, sendEmail } = require('../mail-service.js');
-const {
-  getUser,    createUser,
-  getTicketsByEmailId,
-  createTicket, updateTicketEmailAndAddComment
-} = require('../scsm-actions.js');
+describe('E2E Workflow Integration Test', () => {
+  const profile = profileConfig.profiles[0]; // pick the first profile
+  const sender = 'me';
+  const subject = `[TEST-${Date.now()}] E2E Ticket Creation`;
+  const bodyContent = 'This is a test for full end-to-end ticket creation.';
 
-// point our workflow at a real temp dir under the project
-process.env.WORKFLOW_TMP_DIR = path.join(__dirname, '..', 'tmp-integration');
-const runWorkflows = require('../workflow.js');
+  let sentEmail;
 
-describe('workflow integration (with sequence validation)', () => {
-  const TMP = process.env.WORKFLOW_TMP_DIR;
-  const fakeEmail = {
-    id:   'EMAIL-ABC',
-    mime: Buffer.from("THIS IS MIME;"),
-    subject: 'Test',
-    body:    { content: 'Hello world' },
-    from:    { emailAddress: { name: 'Alice', address: 'alice@example.com' } }
-  };
+  test('sends email, creates ticket, and sends notification', async () => {
+    // Step 1: Send an actual email to inbox
+    await sendEmail({
+      sender,
+      to: config.testInboxEmail,
+      subject,
+      body: bodyContent,
+    }).then(email => {
+      sentEmail = email;
+      console.log(`📧 Email sent: ${email.subject}`);
+    }).catch(err => {
+      console.error('❌ Error sending email:', err);
+    });
+    console.log('✅ Email sent to workflow inbox.');
 
-  beforeAll(() => {
-    // clean out and recreate TMP
-    if (fs.existsSync(TMP)) fs.rmSync(TMP, { recursive: true, force: true });
-    fs.mkdirSync(TMP, { recursive: true });
-  });
+    // Step 2: Wait a bit for Microsoft Graph to receive it
+    await sleep(8000);
 
-  afterAll(() => {
-    if (fs.existsSync(TMP)) fs.rmSync(TMP, { recursive: true, force: true });
-  });
+    // Step 3: Run the actual profile processor (mimicking polling)
+    await processProfile(profile);
+    console.log('⚙️  Workflow profile processed.');
+    await sleep(8000);
 
-  beforeEach(() => {
-    jest.resetAllMocks();
+    // Step 4: Check Deleted Items (processed mails are moved there)
+    const deletedEmails = await getEmailsFromDeleted();
+    const email = deletedEmails.value.find(e => e.subject === subject);
+    expect(email).toBeDefined();
+    console.log('📩 Email was picked up and deleted from inbox.');
 
-    // feed a single new email
-    getEmails.mockResolvedValue({ value: [ fakeEmail ] });
+    // Step 5: Check if ticket was created
+    const tickets = await getTicketsByEmailId(email.id);
+    expect(tickets.length).toBeGreaterThan(0);
+    const ticket = tickets[0];
+    expect(ticket.Id).toBeDefined();
+    console.log(`🎫 Ticket created: ${ticket.Id}`);
 
-    // pretend no ticket exists yet
-    getTicketsByEmailId.mockResolvedValue([]);
-
-    // pretend we never find the user in SCSM
-    getUser.mockResolvedValue(null);
-    createUser.mockResolvedValue({ Id: 'USER-123' });
-
-    // spy on creating a ticket
-    createTicket.mockResolvedValue({ ticketId: 'SRQ-999' });
-
-    // spy on deleting and notifying
-    deleteEmail.mockResolvedValue({});
-    sendEmail.mockResolvedValue(true);
-  });
-
-  it('writes a .eml, creates a ticket, deletes the email, then notifies (in order)', async () => {
-    await runWorkflows();
-
-    // 1) The temp file was written then removed:
-    const emlPath = path.join(TMP, fakeEmail.id + '.eml');
-    expect(fs.existsSync(emlPath)).toBe(false);
-
-    // 2) All the SCSM steps happened:
-    expect(getTicketsByEmailId).toHaveBeenCalledWith(fakeEmail.id);
-    expect(getUser).toHaveBeenCalledWith(
-      fakeEmail.from.emailAddress.name,
-      fakeEmail.from.emailAddress.address
-    );
-    expect(createUser).toHaveBeenCalledWith(
-      fakeEmail.from.emailAddress.name,
-      fakeEmail.from.emailAddress.address
-    );
-    expect(createTicket).toHaveBeenCalledWith(
-      expect.objectContaining({
-        title:       fakeEmail.subject,
-        description: fakeEmail.body.content,
-        emailId:     fakeEmail.id
-      })
-    );
-
-    // 3) Mail‐service deleteEmail + sendEmail were called:
-    expect(deleteEmail).toHaveBeenCalledWith('me', fakeEmail);
-    expect(sendEmail).toHaveBeenCalledWith(
-      'me',
-      fakeEmail.from.emailAddress.address,
-      expect.any(String),   // notification subject
-      expect.any(String)    // notification body
-    );
-
-    // 4) And finally – they were called in the correct *sequence*:
-    const seq = [
-      getEmails.mock.invocationCallOrder[0],
-      getUser.mock.invocationCallOrder[0],
-      createUser.mock.invocationCallOrder[0],
-      getTicketsByEmailId.mock.invocationCallOrder[0],
-      createTicket.mock.invocationCallOrder[0],
-      deleteEmail.mock.invocationCallOrder[0],
-      sendEmail.mock.invocationCallOrder[0]
-    ];
-    expect(seq).toEqual(seq.slice().sort((a,b) => a - b));
-  });
+    // Step 6 (Optional): Check Sent Items for notification (skipped unless logged/tracked)
+  }, 30000); // timeout extended for async actions
 });

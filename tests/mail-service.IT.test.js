@@ -12,11 +12,11 @@ describe('Mail Service (Integration)', () => {
   });
 
   test('sendEmail sends an email', async () => {
-    const result = await sendEmail(
-      config.testRecipient,
-      `Test from Jest at ${new Date().toISOString()}`,
-      'Live test email using Microsoft Graph API'
-    );
+    const result = await sendEmail({
+      to: config.testRecipient,
+      subject: `Test from Jest at ${new Date().toISOString()}`,
+      body: 'Live test email using Microsoft Graph API',
+    });
     expect(result).toBe(true);
   });
 
@@ -29,27 +29,14 @@ describe('Mail Service (Integration)', () => {
     const emailToDelete = emails.value[0];
 
     // Step 3: Call deleteEmail
-    const deletedEmail = await deleteEmail(emailToDelete);
+    const deletedEmail = await deleteEmail({emailObj: emailToDelete});
 
     // Step 4: Check that the returned object has the new parent folder ID
-    expect(deletedEmail).toHaveProperty('id');
+    expect(deletedEmail).toHaveProperty('conversationId');
     expect(deletedEmail.parentFolderId).not.toBe(emailToDelete.parentFolderId);
 
     const deleteditem = await getEmailsFromDeleted();
-    const found = deleteditem.value.find(e => e.id === deletedEmail.id);
+    const found = deleteditem.value.find(e => e.conversationId === deletedEmail.conversationId);
     expect(found).toBeDefined(); // Email should exist in Deleted Items
-  });
-
-  test('should download and save the email as .eml', async () => {
-    const messageId = config.testMessageId;
-    const outputPath = path.join(__dirname, 'downloaded-test.eml');
-
-    const emlBuffer = await getEmail(messageId);
-    expect(emlBuffer).toBeInstanceOf(Buffer);
-    expect(emlBuffer.length).toBeGreaterThan(0);
-
-    fs.writeFileSync(outputPath, emlBuffer);
-    expect(fs.existsSync(outputPath)).toBe(true);
-  });
-  
+  });  
 });

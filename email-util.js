@@ -1,13 +1,15 @@
 
 const fs = require('fs');
-const { getEmails, deleteEmail, sendEmail } = require('./mail-service.js');
+const path = require('path');
+const { getEmails } = require('./mail-service.js');
+const { v4 } = require('uuid');
 
 async function fetchEmails(profile) {
     return (await getEmails(profile.email)).value;
   }
   
-  function saveEmailToDisk(email) {
-    const emailPath = path.join(__dirname, 'tmp', `${email.id}.eml`);
+  function saveEmailToDisk(email, dir='temp') {
+    const emailPath = path.join(__dirname, dir, `${v4()}.eml`);
     fs.writeFileSync(emailPath, email.mime);
     return emailPath;
   }

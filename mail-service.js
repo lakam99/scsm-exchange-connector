@@ -67,7 +67,14 @@ async function getEmails(user='me') {
     return await response.json();
 }
 
-async function sendEmail(user='me', to, subject, body) {
+/**
+ * * Sends an email using the Microsoft Graph API.
+ * @param {Object} options - The email options.
+ * @param {string} [options.user='me'] - The user ID or 'me' for the current authenticated user.
+ * @param {string} options.to - The recipient's email address.
+ * @param {string} options.subject - The subject of the email.
+ */
+async function sendEmail({user = 'me', to, subject, body} = options) {
     const payload = {
         message: {
             subject,
@@ -120,7 +127,7 @@ async function getEmail(user='me', messageId) {
     return Buffer.from(buffer); // Return as Buffer for writing to disk or base64 encoding
 }
 
-async function deleteEmail(user='me', emailObj) {
+async function deleteEmail({user='me', emailObj} = options) {
     const messageId = emailObj.id;
 
     const payload = {

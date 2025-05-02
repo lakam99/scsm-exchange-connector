@@ -1,25 +1,15 @@
 const fs = require('fs').promises;
-const path = require('path');
 const mustache = require('mustache');
-const { getEmails, deleteEmail, sendEmail } = require('./mail-service.js');
+const { sendEmail, deleteEmail } = require('./mail-service.js');
+const { saveEmailToDisk, fetchEmails, cleanUp } = require('./email-util.js');
 const {
-  getUser,
-  createUser,
-  getTicketsByEmailId,
-  createTicket,
-  updateTicketEmailAndAddComment,
   ensureUser,
   createOrUpdateTicketFromEmail,
-  createNewTicket,
-  updateExistingTicket,
-  cleanUp,
-} = require('./scsm-actions.js');
-const { saveEmailToDisk, fetchEmails } = require('./email-util.js');
+} = require('./scsm-util.js');
 const config = require('./profile-config.js');
 
 async function notifySender(email, ticket, profile) {
-  const templatePath = profile.newTicketNotificationTemplatePath;
-  const template = await fs.readFile(templatePath, 'utf8');
+  const template = await fs.readFile(profile.newTicketNotificationTemplatePath, 'utf8');
   const notification = mustache.render(template, {
     ticketId: ticket.Id,
     ticketTitle: ticket.Title,
@@ -37,9 +27,9 @@ async function processEmail(email, profile) {
     const ticket = await createOrUpdateTicketFromEmail(email, user, profile, emailPath);
     await notifySender(email, ticket, profile);
     await deleteEmail(profile.email, email);
-    console.log(`Processed and deleted email: ${email.subject}`);
+    console.log(`[✔] Processed email: "${email.subject}"`);
   } catch (err) {
-    console.error(`Error processing email "${email.subject}":`, err);
+    console.error(`[✖] Error processing "${email.subject}":`, err);
   } finally {
     cleanUp(emailPath);
   }
@@ -50,23 +40,17 @@ async function processProfile(profile) {
     const emails = await fetchEmails(profile);
     await Promise.all(emails.map(email => processEmail(email, profile)));
   } catch (err) {
-    console.error(`Error in profile "${profile.name}":`, err);
+    console.error(`[✖] Error in profile "${profile.name}":`, err);
   }
 }
 
-(async () => {
+async function main() {
   await Promise.all(config.profiles.map(processProfile));
-})();
+}
 
 module.exports = {
-  fetchEmails,
-  saveEmailToDisk,
-  ensureUser,
-  handleTickets: createOrUpdateTicketFromEmail,
-  createNewTicket,
-  updateExistingTicket,
   notifySender,
-  cleanUp,
   processEmail,
   processProfile,
+  main
 };

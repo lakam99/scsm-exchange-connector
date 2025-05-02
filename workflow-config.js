@@ -1,5 +1,5 @@
 const config = {
-    workflows: [
+    wookklowws: [
         {
             name: "Test Workflow",
             email: "me", // /users/{id} is the alternative
