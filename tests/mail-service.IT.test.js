@@ -11,6 +11,33 @@ describe('Mail Service (Integration)', () => {
     expect(Array.isArray(result.value)).toBe(true);
   });
 
+  test('getEmail fetches raw MIME content and saves to disk', async () => {
+    const emails = await getEmails();
+    expect(emails.value.length).toBeGreaterThan(0);
+  
+    const email = emails.value[0];
+  
+    const mimeBuffer = await getEmail('me', email.id);
+    expect(Buffer.isBuffer(mimeBuffer)).toBe(true);
+    expect(mimeBuffer.length).toBeGreaterThan(0);
+  
+    const TMP_DIR = path.join(__dirname, '..', 'tests', 'resources');
+    if (!fs.existsSync(TMP_DIR)) fs.mkdirSync(TMP_DIR, { recursive: true });
+  
+    const filePath = path.join(TMP_DIR, `${email.id}.eml`);
+    fs.writeFileSync(filePath, mimeBuffer);
+  
+    expect(fs.existsSync(filePath)).toBe(true);
+    const fileStats = fs.statSync(filePath);
+    expect(fileStats.size).toBeGreaterThan(0);
+  
+    // Cleanup: remove the file
+    fs.unlinkSync(filePath);
+    expect(fs.existsSync(filePath)).toBe(false);
+  
+    console.log(`✅ getEmail saved MIME content for email ID ${email.id}`);
+  });  
+
   test('sendEmail sends an email', async () => {
     const result = await sendEmail({
       to: config.testRecipient,

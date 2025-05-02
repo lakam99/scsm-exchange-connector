@@ -3,6 +3,9 @@ param(
   [string]$ConversationId = "AQQkADAwATMwMAExLTkxYjAtOTEwNy0wMAItMDAKABAA9sMfmhgpZ06mlhmXrymTjQ=="
 )
 
+Import-Module SMLets 2>$null
+Import-Module "D:\Program Files\Microsoft System Center\Service Manager\PowerShell\System.Center.Service.Manager.psd1" 2>$null
+
 # Classes and Relationship
 $relClass = Get-SCSMRelationshipClass -Name "System.WorkItemHasFileAttachment"
 $attachmentClass = Get-SCSMClass -Name "System.FileAttachment"

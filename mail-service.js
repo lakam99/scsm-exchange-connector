@@ -107,6 +107,13 @@ async function sendEmail({user = 'me', to, subject, body} = options) {
     return true;
 }
 
+/**
+ * * Fetches the raw MIME content of an email message.
+ * * @param {Object} options - The email options.
+ * * @param {string} [options.user='me'] - The user ID or 'me' for the current authenticated user.
+ * * @param {string} options.messageId - The ID of the email message.
+ * * @returns {Promise<Buffer>} - A promise that resolves to the raw MIME content of the email.
+ */
 async function getEmail(user='me', messageId) {
     const url = `https://graph.microsoft.com/v1.0/${user}/messages/${messageId}/$value`;
 

@@ -6,7 +6,7 @@ const config = require('../config.js');
 const profileConfig = require('../profile-config.js');
 
 describe('email-util integration tests', () => {
-  const TMP_DIR = path.join(__dirname, '..', 'tests\\resources');
+  const TMP_DIR = path.join(__dirname, '..', 'tests', 'resources');
   const fakeEmail = {
     id: 'EMAIL-IT-TEST',
     mime: 'This is a test MIME content'
@@ -22,8 +22,6 @@ describe('email-util integration tests', () => {
   });
 
   test('saveEmailToDisk writes file and cleanUp deletes it', () => {
-
-    // temporarily patch __dirname in saveEmailToDisk to point to TMP_DIR
     const originalJoin = path.join;
     path.join = (...args) => {
       if (args[0] === __dirname && args[1] === 'tmp') return TMP_DIR;
@@ -43,12 +41,17 @@ describe('email-util integration tests', () => {
     path.join = originalJoin;
   });
 
+  test('saveEmailToDisk throws error if mime is missing', () => {
+    const emailWithoutMime = { id: 'EMAIL-NO-MIME' };
+    expect(() => saveEmailToDisk(emailWithoutMime, 'tests/resources'))
+      .toThrow('Email object is missing "mime" content');
+  });
+
   test('fetchEmails retrieves real inbox emails', async () => {
     const profile = profileConfig.profiles[0];
     const subject = `[TEST-${Date.now()}] fetchEmails IT test`;
     const bodyContent = 'Integration test message for fetchEmails';
 
-    // Send a real test email
     await sendEmail({
       to: config.testInboxEmail,
       subject,
@@ -59,13 +62,30 @@ describe('email-util integration tests', () => {
       throw err;
     });
 
-    // Give some time for delivery
     await new Promise(resolve => setTimeout(resolve, 8000));
 
     const emails = await fetchEmails(profile);
     const found = emails.find(e => e.subject === subject);
     expect(found).toBeDefined();
     expect(found.subject).toBe(subject);
-    console.log('✅ fetchEmails pulled the test email from inbox');
+    expect(found.mime).toBeDefined();  // Confirm mime exists before saving
+
+    const originalJoin = path.join;
+    path.join = (...args) => {
+      if (args[0] === __dirname && args[1] === 'tmp') return TMP_DIR;
+      return originalJoin.apply(path, args);
+    };
+
+    const emailPath = saveEmailToDisk(found, 'tests/resources');
+    expect(fs.existsSync(emailPath)).toBe(true);
+    const fileContent = fs.readFileSync(emailPath, 'utf8');
+    expect(fileContent).toBe(found.mime);
+
+    cleanUp(emailPath);
+    expect(fs.existsSync(emailPath)).toBe(false);
+
+    path.join = originalJoin;
+
+    console.log('✅ fetchEmails pulled the test email from inbox and saved it to disk');
   }, 20000);
 });

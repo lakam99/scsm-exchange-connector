@@ -15,25 +15,22 @@ describe('E2E Workflow Integration Test', () => {
   let sentEmail;
 
   test('sends email, creates ticket, and sends notification', async () => {
+    config.tempDirectory = 'tests/temp';
     // Step 1: Send an actual email to inbox
-    await sendEmail({
+    const sentEmail = await sendEmail({
       sender,
       to: config.testInboxEmail,
       subject,
       body: bodyContent,
-    }).then(email => {
-      sentEmail = email;
-      console.log(`📧 Email sent: ${email.subject}`);
-    }).catch(err => {
-      console.error('❌ Error sending email:', err);
     });
+    expect(sentEmail).toBeDefined();
     console.log('✅ Email sent to workflow inbox.');
 
     // Step 2: Wait a bit for Microsoft Graph to receive it
     await sleep(8000);
 
     // Step 3: Run the actual profile processor (mimicking polling)
-    await processProfile(profile);
+  await processProfile(profile);
     console.log('⚙️  Workflow profile processed.');
     await sleep(8000);
 

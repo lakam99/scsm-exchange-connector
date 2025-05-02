@@ -9,7 +9,7 @@ const {
 async function ensureUser(email) {
     let user = await getUser(email.from.emailAddress.name, email.from.emailAddress.address);
     if (!user || !user.Id) {
-        const created = await createUser(email.from.emailAddress.name, email.from.emailAddress.address);
+        const created = await createUser(email.from.emailAddress.name, email.from.emailAddress.address); //TODO: This fails always
         if (!created) {
             throw new Error(`Could not create user ${email.from.emailAddress.address}`);
         }

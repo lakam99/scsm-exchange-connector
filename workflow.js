@@ -1,6 +1,6 @@
 const fs = require('fs').promises;
 const mustache = require('mustache');
-const { sendEmail, deleteEmail } = require('./mail-service.js');
+const { sendEmail, deleteEmail, getEmail } = require('./mail-service.js');
 const { saveEmailToDisk, fetchEmails, cleanUp } = require('./email-util.js');
 const {
   ensureUser,
@@ -21,12 +21,16 @@ async function notifySender(email, ticket, profile) {
 }
 
 async function processEmail(email, profile) {
-  const emailPath = saveEmailToDisk(email);
+  let emailPath;
   try {
+    //todo: check if email is already processed
+    email.mime = await getEmail(profile.email, email.id);
+    emailPath = await saveEmailToDisk(email);
+    console.log(`[✔] Saved email to disk: "${email.subject}"`);
     const user = await ensureUser(email);
     const ticket = await createOrUpdateTicketFromEmail(email, user, profile, emailPath);
     await notifySender(email, ticket, profile);
-    await deleteEmail(profile.email, email);
+    await deleteEmail({user: profile.email, emailObj: email});
     console.log(`[✔] Processed email: "${email.subject}"`);
   } catch (err) {
     console.error(`[✖] Error processing "${email.subject}":`, err);
@@ -38,7 +42,7 @@ async function processEmail(email, profile) {
 async function processProfile(profile) {
   try {
     const emails = await fetchEmails(profile);
-    await Promise.all(emails.map(email => processEmail(email, profile)));
+    await Promise.all(emails.map(async email => await processEmail(email, profile)));
   } catch (err) {
     console.error(`[✖] Error in profile "${profile.name}":`, err);
   }

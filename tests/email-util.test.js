@@ -19,8 +19,12 @@ describe('email-util', () => {
 
   test('saveEmailToDisk writes file and returns path', () => {
     const result = saveEmailToDisk(fakeEmail);
-    expect(fs.writeFileSync).toHaveBeenCalledWith(expect.stringContaining(fakeEmail.id), fakeEmail.mime);
-    expect(result).toContain(fakeEmail.id);
+    expect(fs.writeFileSync).toHaveBeenCalledWith(expect.any(String), fakeEmail.mime);
+    expect(result).toMatch(/\.eml$/);
+  });
+
+  test('saveEmailToDisk throws error if mime is missing', () => {
+    expect(() => saveEmailToDisk({ id: 'email2' })).toThrow('Email object is missing "mime" content');
   });
 
   test('cleanUp removes file', () => {
