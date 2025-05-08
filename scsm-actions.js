@@ -18,6 +18,9 @@ function runPowerShell(scriptPath, args = []) {
   });
 }
 
+// 1st get powershell working for create user
+// 2nd make sure its it test working 3rd create new account in graph, grant it all permissions for mail 4th replace the token in config.js 5th test workflow . it test
+
 /**
  * Represents a simplified user object returned from SCSM.
  * 
