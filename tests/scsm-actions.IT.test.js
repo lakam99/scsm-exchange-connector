@@ -1,7 +1,13 @@
-const { getUser, createUser, createTicket } = require('../scsm-actions.js');
+const { getUser, createUser, createTicket, createUserjs } = require('../scsm-actions.cjs');
 const fs = require('fs');
 const path = require('path');
-
+const httpntlm = require('httpntlm');
+const fetch = require('node-fetch');
+jest.mock('httpntlm', () => ({
+  post: jest.fn()
+}));
+jest.mock('node-fetch', () => jest.fn());
+const { Response } = jest.requireActual('node-fetch');
 jest.setTimeout(20000); // Allow more time for PowerShell execution
 
 describe('SCSM Actions (Integration)', () => {
@@ -60,4 +66,30 @@ describe('SCSM Actions (Integration)', () => {
     expect(typeof result).toBe('object');
     expect(result.Id).toBeDefined();
   });
+
+  
+const { Response } = jest.requireActual('node-fetch');
+
+describe('Integration test: createUser (Real Cireson API)', () => {
+  //const timestamp = Date.now();
+  const testUserData = {
+    Name: `Integration Tester`,
+    Email: `itester_@nserc.ca`,
+    Username: "scsmapi",
+    Password: "H0neyd3w",           // 🔐 Real password used directly
+    Domain: "NSERC",
+    PortalUrl: "http://ottansm2"    // ✅ Full portal root, not just /api
+  };
+
+  it('should successfully create a user via the real Cireson API', async () => {
+    const result = await createUserjs(testUserData);
+    expect(result.success).toBe(true);
+    expect(result.created).toBe(true);
+    expect(result.Id).toBeDefined();
+    expect(result.UPN).toBe(testUserData.Email);
+  }, 120000); // <-- sets timeout to 60 seconds
+  
+});
+
+
 });

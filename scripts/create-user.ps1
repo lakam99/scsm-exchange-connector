@@ -1,15 +1,15 @@
 param (
-    [string]$Name  = "Taha Amine",
-    [string]$Email = "taha5.amine@gmail.com",
-    [string]$Token = "<YOUR_CIRESON_API_TOKEN>"  # You must inject this securely (from Node or CLI)
+    [string]$Name  = "Taha6 Amine",
+    [string]$Email = "taha6.amine@gmail.com",
+    [string]$Username = "change plz",
+    [string]$Password = "change plz",      # 🛑 Replace securely
+    [string]$Domain   = "change plz",
+    [string]$PortalUrl = "change plz"       # ✅ e.g., http://ottansm3
 )
 
 # === Load SMLets ===
 Import-Module SMLets -ErrorAction SilentlyContinue
 Import-Module "D:\Program Files\Microsoft System Center\Service Manager\PowerShell\System.Center.Service.Manager.psd1" -ErrorAction SilentlyContinue
-
-# === Classes ===
-$userClass = Get-SCSMClass -Name 'System.Domain.User'
 
 # === Parse name ===
 if ($Name -match '\s') {
@@ -21,11 +21,12 @@ if ($Name -match '\s') {
 }
 
 $displayName = "$lastName,$firstName"
-$username    = $Email.Split("@")[0]
+$usernamePart = $Email.Split("@")[0]
 $domainAndTLD = $Email.Split("@")[1]
 
-# === Check if user exists ===
-$existingUser = Get-SCSMObject -Class $userClass -Filter "UserName -eq '$username' -and Domain -eq '$domainAndTLD'"
+# === Step 1: Check if user exists using SMLets ===
+$userClass = Get-SCSMClass -Name 'System.Domain.User'
+$existingUser = Get-SCSMObject -Class $userClass -Filter "UserName -eq '$usernamePart' -and Domain -eq '$domainAndTLD'"
 
 if ($existingUser) {
     return @{
@@ -37,7 +38,24 @@ if ($existingUser) {
     } | ConvertTo-Json -Compress
 }
 
-# === If not exists → Create via Cireson API ===
+
+
+# === Step 2: Get Cireson API Token using NTLM ===
+$tokenUrl = "$PortalUrl/api/V3/Authorization/GetToken"
+$tokenBody = @{
+    UserName     = "$Domain\$Username"
+    Password     = $Password
+    LanguageCode = "ENU"
+} | ConvertTo-Json -Compress
+
+try {
+    $tokenResponse = Invoke-WebRequest -Uri $tokenUrl -Method Post -Body $tokenBody -ContentType "application/json" -UseDefaultCredentials
+    $token = ($tokenResponse.Content -replace '"', '')
+} catch {
+    throw "Failed to get token: $($_.Exception.Message)"
+}
+
+# === Step 3: Prepare payload and create user via Cireson API ===
 $createPayload = @{
     original = $null
     current = @{
@@ -63,21 +81,17 @@ $createPayload = @{
         Company            = ""
     }
 }
-
-$portalUrl = "http://ottansm3"
-$createUrl = "$portalUrl/api/V3/Projection/Commit"
 $createBody = $createPayload | ConvertTo-Json -Depth 10
+$createUrl = "$PortalUrl/api/V3/Projection/Commit"
 
 $headers = @{
-    "Authorization" = "Token $Token"
+    "Authorization" = "Token $token"
     "Content-Type"  = "application/json"
 }
 
 try {
     $response = Invoke-RestMethod -Uri $createUrl -Method Post -Headers $headers -Body $createBody
-
-    @{
-
+    return @{
         success     = $true
         created     = $true
         Id          = $response.BaseId
@@ -86,5 +100,8 @@ try {
     } | ConvertTo-Json -Compress
 }
 catch {
-    @{ success = $false; error = $_.Exception.Message } | ConvertTo-Json -Compress
+    return @{
+        success = $false
+        error   = $_.Exception.Message
+    } | ConvertTo-Json -Compress
 }
