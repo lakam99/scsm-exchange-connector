@@ -1,5 +1,11 @@
 module.exports = {
-    accessToken: ``,
-    testRecipient: '',
-    folderName: 'Inbox'
+    accessToken: `EwBIBMl6BAAUBKgm8k1UswUNwklmy2v7U/S+1fEAAYfBMAJOX3U9YtOhKs/hdV8TN8Ft47X4Y6X7Fj/HTuuo+GDx9yIruajxPTSkgl4PugJsxqEEKK7cWxwbQ/t+6/w1PjjXgZidtbRqfiOnBSAnFPQZ7+uA7xfkgMuDe0i7UDxZmKevX/4Ti/LjftQTnjTrdxZjGuBZ8u2Xo6oO5Wm4tITbg1AOhJc5Ml5zzibaLJVhxfXB3KnVy7iA4EleXubIldXPBzsnlWSXwBn4lubJtwHiSducyq6EOjRjoKL+bLJpSwIFiiKU7BN/gZrsuoAO8qS7pXBG9VAjZJ/bnID/LT0qB+GpKKg623kmtsmAgLWjpxzkrvdBkZKUV++RNKgQZgAAEFAXDD2P3atUPFMAfeqEGJYQA4vy91RV1D3HdO8RLLFvqgGd7Id3Das+WA8ATfxmvrrLYUa3X/TWiFlaF0ftwYPpiCKsAsnJiy/P/7BDiAEbbskJUsqRc1+JI+v2JdqtEcLN412Gnk6MCZAI+aNcNsc86nxrjFQzP7kfN35+cQJsgyaVgPFiac8dA4YM6fVZPJy3k71tKwS4h6lmC35LEBn9Alhd/DtCcR5C1LcFCB5t5g2Ec5QtP2PADjOdizHRY7/KXADWjCcmkqOMmfZiVn/Cuhb5ogjmI4i6ZNF7jhlzN5DhrgOoNrTNDwVO4CJ6Jddu5f8HcCzcq2bMTL1liiYhcWSoAzfNZV5DHv6kVpiFzDHJvR26eV1rhrYK9iD0g4eaEOKSaIMdtERIJ2H0zekVO0NK/2RzZjvZDhJ9BHE559PAijoktah05uqtIrNeVwUpYJTcKpS51NQLQk91Hc1g/XZSfKePnfuwlaoC2Jb0xJhGMw4wehEZW4VW9VDO7pp83nU8+PYEL4R/qxXpzjdnNt5IyNNcdYEcDiKwp78ojxvEnb24+An8taFtqz5gBYnk5W+vCyW0VYSjmW7hYDAJtRBwk11eOc0drYWVq7ONEM15zFZRKA4zWu02k+9R3Fk4ECvjkM9usqwsKGRlRPHD+w3La/cxs0U1biWbTUgpJJIYTcLO3CukJrH2BBaB8Qq30Fyqby7bFXjCjZTiFHMfEeBgimPMdtC2FjH7BUxyJd0tmIJQlXs6Ge4O/jVyZdqSfg3mSqBsId/ezITZwx++jamRzm96CZ9a/fe4doNE6Hk2JKRAgPbKB+5G4zcHkFeazlGX+w85ANGY44r7wc/Tx09jPICXXBxlKw19D683ASdyo/oiHHf2ToXpEtB5aNtQ1WzMASE53RgIx3YHT7EphgKjB7PzsKXXXGcz5n6H4OLUAvdR90msP1nIGDFL0uGuqqTUm4KU9UTxpZLtnsvKOSUJNyoTe4UVBqQGl9MLdVt67RjQeRTOCk8ACCgeoclTUhCCjCHIQju2a/b0JLMQ8ZqOmTdgI+rNMyYDj2ob3vdTAw==`,
+    testRecipient: 'abdelraouf16@gmail.com',
+    testInboxEmail: 'testteam566@outlook.com',
+    folderName: 'Inbox',
+    testMessageId: 'AQMkADAwATMwMAExLTkxYjAtOTEwNy0wMAItMDAKAEYAAAPcXgQqhzdOTbvkXeN_plIgBwAC8qVmuZLiQrwbulKI2tj_AAACAQwAAAAC8qVmuZLiQrwbulKI2tj_AAACDSIAAAA=',
+    ciresonUsername: 'scsmapi',
+    ciresonPassword: '',
+    ciresonDomain: 'NSERC',
+    ciresonPortalUrl: 'http://ottansm2'
 }
