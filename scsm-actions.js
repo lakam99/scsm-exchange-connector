@@ -1,5 +1,34 @@
 const { execFile } = require('child_process');
 const path = require('path');
+// Required libraries
+const fetch = require('node-fetch');
+const {createPortalUser} = require('./cireson-util.js');
+// keep only name and email and put the rest in the config file
+async function createUser(Name, Email) {
+  const firstName = Name.includes(' ') ? Name.substring(0, Name.lastIndexOf(' ')).trim() : Name;
+  const lastName = Name.includes(' ') ? Name.substring(Name.lastIndexOf(' ') + 1).trim() : 'Unknown';
+
+  const existingUser = await getUser(Name, Email);
+  if (Object.values(existingUser).length) {
+    return {
+      success: true,
+      existing: true,
+      created: false,
+      DisplayName: existingUser.DisplayName,
+      Id: existingUser.Id,
+      UPN: existingUser.UPN
+    };
+  } else {
+    const result = createPortalUser(firstName, lastName, Email); //Only returns a baseId
+    return {
+      success: true,
+      created: true,
+      existing: false,
+      Id: result.BaseId,
+      UPN: Email // dangerous, we're assuming the user was created with the email successfully. The user could be created, but the UPN could be blank.
+    };
+  }
+}
 
 function runPowerShell(scriptPath, args = []) {
   return new Promise((resolve, reject) => {
@@ -18,7 +47,8 @@ function runPowerShell(scriptPath, args = []) {
   });
 }
 
-// 1st get powershell working for create user
+// 1st get powershell working for create user - done need unit second thing
+
 // 2nd make sure its it test working 3rd create new account in graph, grant it all permissions for mail 4th replace the token in config.js 5th test workflow . it test
 
 /**
@@ -41,12 +71,6 @@ async function getUser(name, email) {
   const script = path.join(__dirname, 'scripts/get-user.ps1');
   // Pass the parameters without extra quotes
   return await runPowerShell(script, ['-Name', name, '-Email', email]);
-}
-
-async function createUser(name, email) {
-  const script = path.join(__dirname, 'scripts/create-user.ps1');
-  const result = await runPowerShell(script, ['-Name', name, '-Email', email]);
-  return result.success === true;
 }
 
 /**
@@ -119,10 +143,10 @@ async function createTicket(options) {
     emailPath,
     emailFrom,
     emailId
-   } = options;
+  } = options;
 
   const scriptPath = path.join(__dirname, 'scripts', 'create-ticket.ps1');
-  
+
   const args = [
     '-Title', title,
     '-Description', description,
@@ -148,5 +172,5 @@ module.exports = {
   createTicket,
   getTicketsByEmailId,
   updateTicketEmailAndAddComment,
-  getComment
+  getComment,
 };

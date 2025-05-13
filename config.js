@@ -3,5 +3,9 @@ module.exports = {
     testRecipient: 'abdelraouf16@gmail.com',
     testInboxEmail: 'testteam566@outlook.com',
     folderName: 'Inbox',
-    testMessageId: 'AQMkADAwATMwMAExLTkxYjAtOTEwNy0wMAItMDAKAEYAAAPcXgQqhzdOTbvkXeN_plIgBwAC8qVmuZLiQrwbulKI2tj_AAACAQwAAAAC8qVmuZLiQrwbulKI2tj_AAACDSIAAAA='
+    testMessageId: 'AQMkADAwATMwMAExLTkxYjAtOTEwNy0wMAItMDAKAEYAAAPcXgQqhzdOTbvkXeN_plIgBwAC8qVmuZLiQrwbulKI2tj_AAACAQwAAAAC8qVmuZLiQrwbulKI2tj_AAACDSIAAAA=',
+    ciresonUsername: 'scsmapi',
+    ciresonPassword: '',
+    ciresonDomain: 'NSERC',
+    ciresonPortalUrl: 'http://ottansm2'
 }

@@ -46,7 +46,7 @@ describe('Mail Service (Unit)', () => {
       body: 'Test Body'
     });
     expect(fetch).toHaveBeenCalledWith(
-      'https://graph.microsoft.com/v1.0/test@example.com/sendMail',
+      'https://graph.microsoft.com/v1.0/me/sendMail',
       expect.objectContaining({
         method: 'POST',
         headers: expect.objectContaining({
