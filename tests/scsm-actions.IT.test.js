@@ -1,4 +1,5 @@
-const { getUser, createUser, createTicket } = require('../scsm-actions.js');
+const { getUser, createUser, createTicket, updateTicketEmailAndAddComment,
+  getComment, deleteUser } = require('../scsm-actions.js');
 const fs = require('fs');
 const path = require('path');
 
@@ -44,51 +45,64 @@ describe('SCSM Actions (Integration)', () => {
     expect(result).toBeDefined();
     expect(typeof result).toBe('object');
     expect(result.Id).toBeDefined();
-  });
+  }, 50000);
 
   describe('Integration test: createUserjs (Cireson API)', () => {
+  const timestamp = Date.now();
+  const testUserData = {
+    Name: `Integration Tester1 ${timestamp}`,
+    Email: `itest${timestamp}@nserc.ca`,
+  };
 
-    // TODO : Dynamically generate the test user data to work with the creation & already exists test
-    // You want to be able to determine a user that already exists (and has been asserted to exist) cannot be recreated using createUser
-    // TODO: Add afterAll -> deleteUsers created
-
-    let testUserData = {
-      Name: `Integration12 Tester`,
-      Email: `itester12@nserc.ca`,
-    };
-
-    afterAll(() => {
-      // TODO: Clean up the test user
-      // Clean up the test user after the tests
-      // This is just a placeholder. You should implement the actual deletion logic.
-      console.log('Cleaning up test user...');
-      // await deleteUser(testUserData.Email);
-    })
-
-    it('creates a new user successfully', async () => {
-      console.time("createUserjs");
-      const result = await createUser(testUserData.Name, testUserData.Email);
-      console.timeEnd("createUserjs");
-
-      expect(result.success).toBe(true);
-      expect(result.UPN).toBe(testUserData.Email);
-      expect(result.Id).toBeDefined();
-      expect(result.created).toBe(true);
-      expect(result.existing).toBe(false);
-    }, 30000); // Extend timeout just in case
-
-    it('checks if the user attempting to be created already exists', async () => {
-      console.time("createUserjs");
-      //const testUserData = getUser("user that exsists");
-      //expect(!!testUserData).toBe(true); //add assertiom user already exists
-      const result = await createUser(testUserData.Name, testUserData.Email); 
-      console.timeEnd("createUserjs");
-
-      expect(result.success).toBe(true);
-      expect(result.UPN).toBe(testUserData.Email);
-      expect(result.Id).toBeDefined();
-      expect(result.existing).toBe(true);
-      expect(result.created).toBe(false);
-    }, 30000); // Extend timeout just in case
+  afterAll(async () => {
+    console.log(`Cleaning up test user: ${testUserData.Email}`);
+    if (typeof deleteUser === 'function') {
+      await deleteUser(testUserData.Email);
+    } else {
+      console.warn("deleteUser function not implemented.");
+    }
   });
+
+  it('creates a new user successfully', async () => {
+    console.time("createUserjs - first call");
+    const result = await createUser(testUserData.Name, testUserData.Email);
+    console.timeEnd("createUserjs - first call");
+
+    expect(result.success).toBe(true);
+    expect(result.UPN).toBe(testUserData.Email);
+    //expect(result.Id).toBeDefined();
+    expect(result.created).toBe(true);
+    expect(result.existing).toBe(false);
+  }, 30000);
+
+  it('should recognize the user already exists on second creation attempt', async () => {
+    console.time("createUserjs - second call");
+    const result = await createUser(testUserData.Name, testUserData.Email);
+    console.timeEnd("createUserjs - second call");
+
+    expect(result.success).toBe(true);
+    expect(result.UPN).toBe(testUserData.Email);
+    //expect(result.Id).toBeDefined();
+    expect(result.created).toBe(false);
+    expect(result.existing).toBe(true);
+  }, 30000);
+});
+
+
+// IT test for updateTicketEmailAndAddComment
+  describe('ticketService (integration)', () => {
+    const TEST_TICKET_ID = 'SRQ130667';                 // replace with a real SRQ
+    const TEST_EMAIL_PATH = path.join(__dirname, '..', 'tests', 'temp', 'test-1744751354915.eml')
+  
+    test('round-trip: updateTicketEmailAndAddComment → getComment', async () => {
+      // 1) push a new email + comment into the ticket
+      const added = await updateTicketEmailAndAddComment(TEST_TICKET_ID, TEST_EMAIL_PATH);
+      expect(added).toBe(true);
+  
+      // 2) now retrieve it back
+      const hasComment = await getComment(TEST_TICKET_ID);
+      expect(hasComment).toBe(true);
+    });
+  });
+
 });

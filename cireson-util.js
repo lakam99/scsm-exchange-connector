@@ -58,8 +58,9 @@ function getCiresonAPIToken() {
 }
 
 async function createPortalUser(firstName, lastName, email) {
-    const payload = createUserPayload(firstName, lastName, email);
+    
     const token = await getCiresonAPIToken();
+    const payload = createUserPayload(firstName, lastName, email);
     const response = await fetch(`${config.ciresonPortalUrl}/api/V3/Projection/Commit`, {
       method: 'POST',
       headers: {

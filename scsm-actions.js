@@ -47,9 +47,8 @@ function runPowerShell(scriptPath, args = []) {
   });
 }
 
-// 1st get powershell working for create user - done need unit second thing
 
-// 2nd make sure its it test working 3rd create new account in graph, grant it all permissions for mail 4th replace the token in config.js 5th test workflow . it test
+// 3rd create new account in graph, grant it all permissions for mail 4th replace the token in config.js 5th test workflow . it test
 
 /**
  * Represents a simplified user object returned from SCSM.
@@ -91,7 +90,7 @@ async function getTicketsByEmailId(emailId) {
  * @param {string} pathToNewEmail - The full path to the new email MIME file. 
  * @returns {Promise<WorkItem>}
  */
-//1 TODO: Write IT Test verifying using getComment in the same test for both these functions
+
 async function updateTicketEmailAndAddComment(ticketId, pathToNewEmail) {
   const script = path.join(__dirname, 'scripts/update-ticket-email.ps1');
   const result = await runPowerShell(script, ['-TicketId', ticketId, '-EmailMimePath', pathToNewEmail]);
@@ -103,6 +102,14 @@ async function getComment(ticketId) {
   const result = await runPowerShell(script, ['-TicketId', ticketId]);
   return result.success;
 }
+
+async function deleteUser(email) {
+  const script = path.join(__dirname, 'scripts/delete-user.ps1');
+  const result = await runPowerShell(script, ['-Email', email]);
+  return result.success;
+    
+}
+
 
 /**
  * Options for creating a support ticket.
@@ -173,4 +180,5 @@ module.exports = {
   getTicketsByEmailId,
   updateTicketEmailAndAddComment,
   getComment,
+  deleteUser,
 };
