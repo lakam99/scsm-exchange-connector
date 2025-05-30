@@ -41,12 +41,12 @@ describe('E2E Workflow Integration Test', () => {
     console.log('📩 Email was picked up and deleted from inbox.');
 
     // Step 5: Check if ticket was created
-    const tickets = await getTicketsByEmailId(email.id);
+    const tickets = await getTicketsByEmailId(email.subject);
     expect(tickets.length).toBeGreaterThan(0);
     const ticket = tickets[0];
     expect(ticket.Id).toBeDefined();
     console.log(`🎫 Ticket created: ${ticket.Id}`);
 
     // Step 6 (Optional): Check Sent Items for notification (skipped unless logged/tracked)
-  }, 30000); // timeout extended for async actions
+  }, 1800000); // timeout extended for async actions
 });

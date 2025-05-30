@@ -79,9 +79,9 @@ async function getUser(name, email) {
  */
 
 // 2nd powershell and unit test and it
-async function getTicketsByEmailId(emailId) {
+async function getTicketsByEmailId(srqtitle) {
   const script = path.join(__dirname, 'scripts/get-tickets-by-emailid.ps1');
-  const result = await runPowerShell(script, ['-EmailId', emailId]);
+  const result = await runPowerShell(script, ['-srqtitle', srqtitle]);
   return result.success;
 }
 /**
@@ -145,7 +145,7 @@ async function createTicket(options) {
     title,
     description,
     affectedUserId,
-    templateName = "Post Awards Reconciliation Template SRQ",
+    templateName,
     emailSubject,
     emailPath,
     emailFrom,

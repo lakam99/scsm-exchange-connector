@@ -1,6 +1,7 @@
 # TODO: performance review
 param(
-  [string]$ConversationId = "AQQkADAwATMwMAExLTkxYjAtOTEwNy0wMAItMDAKABAA9sMfmhgpZ06mlhmXrymTjQ=="
+    #[string]$conversationId,
+    [string]$srqtitle
 )
 
 Import-Module SMLets 2>$null
@@ -11,17 +12,25 @@ $relClass = Get-SCSMRelationshipClass -Name "System.WorkItemHasFileAttachment"
 $attachmentClass = Get-SCSMClass -Name "System.FileAttachment"
 $srClass = Get-SCSMClass -Name "System.WorkItem.ServiceRequest"
 
-# Retrieve all SRQs
-$tickets = Get-SCSMObject -Class $srClass
+# Get target ticket(s)
+$tickets = if ($srqtitle) {
+    $escaped = [Regex]::Escape($srqtitle)
+    Get-SCSMObject -Class $srClass | Where-Object { $_.Title -match $escaped }
+} else {
+    Get-SCSMObject -Class $srClass
+}
 
 $matched = @()
 
 foreach ($ticket in $tickets) {
-    # Get only FileAttachments related to this ticket
-    $attachments = Get-SCSMRelatedObject -SMObject $ticket -Relationship $relClass | Where-Object { $_.ClassName -ieq $attachmentClass.Name }
-    if (!$attachments) { continue } # <-- skip if no attachments
+    $attachments = Get-SCSMRelatedObject -SMObject $ticket -Relationship $relClass | Where-Object {
+        $_.ClassName -ieq $attachmentClass.Name
+    }
+
+    if (!$attachments) { continue }
+
     foreach ($att in $attachments) {
-        if ($att.Description -like "*ExchangeConversationID:$ConversationId*") {
+        if ($att.DisplayName -like "$srqtitle") {
             $matched += [PSCustomObject]@{
                 Id          = $ticket.Id.ToString()
                 Title       = $ticket.Title
@@ -33,4 +42,4 @@ foreach ($ticket in $tickets) {
 }
 
 # Output JSON
-$matched | ConvertTo-Json -Compress
+@{ success = $matched } | ConvertTo-Json -Compress

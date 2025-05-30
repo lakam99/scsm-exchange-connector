@@ -1,13 +1,13 @@
 ﻿param (
     [string]$Title,
     [string]$Description,
-    [string]$affectedUserId = "3c7570be-70c3-498e-724e-b6a7e4649c11",
-    [string]$templateName = "Post Awards Reconciliation Template SRQ",
+    [string]$affectedUserId,
+    [string]$templateName,
 
     # Email-specific parameters from Graph API object
     [string]$EmailSubject    = "emailsub",
     [string]$EmailMimePath = "./../tests/temp/test-1744751298029.eml",
-    [string]$EmailFrom       = "yaseen.choukri@outlook.ca",
+    [string]$EmailFrom       = "yaseen.choukri@outlook.com",
     [string]$ConversationId  = "AQQkADAwATMwMAExLTkxYjAtOTEwNy0wMAItMDAKABAA9sMfmhgpZ06mlhmXrymTjQ=="
 )
 

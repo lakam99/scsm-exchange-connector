@@ -13,21 +13,33 @@ async function ensureUser(email) {
         if (!created) {
             throw new Error(`Could not create user ${email.from.emailAddress.address}`);
         }
-        user = await getUser(email.from.emailAddress.name, email.from.emailAddress.address);
+        return created;
+        //user = await getUser(email.from.emailAddress.name, email.from.emailAddress.address);
     }
     return user;
 }
 
+function truncate(text, max) {
+    if (!text) return '';
+    return text.length > max ? text.slice(0, max - 3) + '...' : text;
+  }
+  
+  function stripHtml(html) {
+    return html.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+  }
+  
 /**
 * Creates a new ticket in the system.
 * @return {Promise<WorkItem>}
 */
 async function createNewTicket(email, user, profile, emailPath) {
+    // process html to make lines befoire cleaning
+    const safeDescription = truncate(stripHtml(email.body?.content), 4000);
     return await createTicket({
         title: email.subject,
-        description: email.body.content,
+        description: safeDescription,
         affectedUserId: user.Id,
-        templateName: profile.newTicketNotificationTemplatePath,
+        templateName: profile.newTicketTemplate,
         emailSubject: email.subject,
         emailPath,
         emailFrom: email.from.emailAddress.address,
@@ -54,7 +66,7 @@ async function updateExistingTicket(ticket, emailPath) {
 * @return {Promise<WorkItem>}
 */
 async function createOrUpdateTicketFromEmail(email, user, profile, emailPath) {
-    const tickets = await getTicketsByEmailId(email.id);
+    const tickets = await getTicketsByEmailId(email.subject);
 
     if (tickets && tickets.length > 0) {
         const ticket = tickets[0];

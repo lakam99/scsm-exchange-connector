@@ -16,8 +16,12 @@ async function notifySender(email, ticket, profile) {
     emailSubject: email.subject,
     emailFrom: email.from.emailAddress.name,
   });
-
-  await sendEmail('me', email.from.emailAddress.address, `Re: ${email.subject}`, notification);
+  await sendEmail({
+    user: 'me',
+    to: email.from.emailAddress.address,
+    subject: `Re: ${email.subject}`,
+    body: notification
+  })
 }
 
 async function processEmail(email, profile) {
@@ -42,7 +46,10 @@ async function processEmail(email, profile) {
 async function processProfile(profile) {
   try {
     const emails = await fetchEmails(profile);
-    await Promise.all(emails.map(async email => await processEmail(email, profile)));
+    //await Promise.all(emails.map(async email => await processEmail(email, profile)));
+    for (const email of emails) {
+      await processEmail(email, profile);
+    }
   } catch (err) {
     console.error(`[✖] Error in profile "${profile.name}":`, err);
   }
