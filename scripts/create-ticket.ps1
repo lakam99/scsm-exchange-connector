@@ -1,15 +1,14 @@
 ﻿param (
     [string]$Title,
     [string]$Description,
-    [string]$affectedUserId = "3c7570be-70c3-498e-724e-b6a7e4649c11",
-    [string]$templateName = "Post Awards Reconciliation Template SRQ",
+    [string]$affectedUserId,
+    [string]$templateName,
 
     # Email-specific parameters from Graph API object
-    [string]$EmailSubject    = "emailsub",
-    [string]$EmailBodyHtml   = "emailsubhtml",
-    [string]$EmailMimePath = "./../tests/temp/test-1744750233801.eml",
-    [string]$EmailFrom       = "yaseen.choukri@outlook.ca",
-    [string]$ConversationId  = ""
+    [string]$EmailSubject,
+    [string]$EmailMimePath,
+    [string]$EmailFrom ,
+    [string]$ConversationId
 )
 
 cd $PSScriptRoot
