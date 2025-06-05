@@ -79,9 +79,9 @@ async function getUser(name, email) {
  */
 
 // 2nd powershell and unit test and it
-async function getTicketsByEmailId(srqtitle) {
+async function getTicketsByEmailId(conversationId, srqtitle) {
   const script = path.join(__dirname, 'scripts/get-tickets-by-emailid.ps1');
-  const result = await runPowerShell(script, ['-srqtitle', srqtitle]);
+  const result = await runPowerShell(script, ['-conversationId', conversationId,'-srqtitle', srqtitle]);
   return result.success;
 }
 /**
@@ -101,6 +101,12 @@ async function getComment(ticketId) {
   const script = path.join(__dirname, 'scripts/get-comment.ps1');
   const result = await runPowerShell(script, ['-TicketId', ticketId]);
   return result.success;
+}
+
+async function getCompletedTickets(profile) {
+  const script = path.join(__dirname, 'scripts/get-completed-tickets.ps1');
+  const result = await runPowerShell(script, ['-templateName', profile.newTicketTemplate]);
+  return result.success || [];
 }
 
 async function deleteUser(email) {
@@ -181,4 +187,5 @@ module.exports = {
   updateTicketEmailAndAddComment,
   getComment,
   deleteUser,
+  getCompletedTickets,
 };

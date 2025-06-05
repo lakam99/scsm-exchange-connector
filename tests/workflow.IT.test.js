@@ -41,7 +41,7 @@ describe('E2E Workflow Integration Test', () => {
     console.log('📩 Email was picked up and deleted from inbox.');
 
     // Step 5: Check if ticket was created
-    const tickets = await getTicketsByEmailId(email.subject);
+    const tickets = await getTicketsByEmailId(email.conversationId, email.subject);
     expect(tickets.length).toBeGreaterThan(0);
     const ticket = tickets[0];
     expect(ticket.Id).toBeDefined();

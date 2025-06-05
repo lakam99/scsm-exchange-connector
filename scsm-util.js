@@ -43,7 +43,7 @@ async function createNewTicket(email, user, profile, emailPath) {
         emailSubject: email.subject,
         emailPath,
         emailFrom: email.from.emailAddress.address,
-        emailId: email.id
+        emailId: email.conversationId
     });
 }
 
@@ -66,7 +66,7 @@ async function updateExistingTicket(ticket, emailPath) {
 * @return {Promise<WorkItem>}
 */
 async function createOrUpdateTicketFromEmail(email, user, profile, emailPath) {
-    const tickets = await getTicketsByEmailId(email.subject);
+    const tickets = await getTicketsByEmailId(email.conversationId, email.subject);
 
     if (tickets && tickets.length > 0) {
         const ticket = tickets[0];

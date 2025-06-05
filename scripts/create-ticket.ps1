@@ -5,10 +5,10 @@
     [string]$templateName,
 
     # Email-specific parameters from Graph API object
-    [string]$EmailSubject    = "emailsub",
-    [string]$EmailMimePath = "./../tests/temp/test-1744751298029.eml",
-    [string]$EmailFrom       = "yaseen.choukri@outlook.com",
-    [string]$ConversationId  = "AQQkADAwATMwMAExLTkxYjAtOTEwNy0wMAItMDAKABAA9sMfmhgpZ06mlhmXrymTjQ=="
+    [string]$EmailSubject,
+    [string]$EmailMimePath,
+    [string]$EmailFrom ,
+    [string]$ConversationId
 )
 
 cd $PSScriptRoot

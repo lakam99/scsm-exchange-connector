@@ -19,6 +19,16 @@ const config = {
             completedTicketNotificationTemplatePath: "templates/default-completion-notification-template.html",
             primaryInbox: "Inbox",
             pollRate: "15" // in seconds
+        },
+        {
+            name: "Usegrantsfunds",
+            email: "Usegrantsfunds.com", // /users/{id} is the alternative
+            newTicketTemplate: "NEW Service Request",
+            updatedTicketTemplate: "",
+            newTicketNotificationTemplatePath: "templates/default-notification-template.html",
+            completedTicketNotificationTemplatePath: "templates/default-completion-notification-template.html",
+            primaryInbox: "Inbox",
+            pollRate: "15" // in seconds
         }
     ]
 }
