@@ -40,8 +40,11 @@ describe('Mail Service (Unit)', () => {
   test('sendEmail sends mail successfully', async () => {
     fetch.mockResolvedValueOnce({ ok: true });
 
-    const result = await sendEmail('test@example.com', 'Test Subject', 'Test Body');
-
+    const result = await sendEmail({
+      to: 'test@example.com',
+      subject: 'Test Subject',
+      body: 'Test Body'
+    });
     expect(fetch).toHaveBeenCalledWith(
       'https://graph.microsoft.com/v1.0/me/sendMail',
       expect.objectContaining({
@@ -76,7 +79,7 @@ describe('Mail Service (Unit)', () => {
       text: async () => 'Invalid request body'
     });
 
-    await expect(sendEmail('a@b.com', 'sub', 'body')).rejects.toThrow(/Error sending email: 400 Bad Request/);
+    await expect(sendEmail({to: 'a@b.com', subject: 'sub', body: 'body'})).rejects.toThrow(/Error sending email: 400 Bad Request/);
   });
 
   it('should fetch and return the .eml buffer of an email', async () => {
@@ -86,8 +89,8 @@ describe('Mail Service (Unit)', () => {
       arrayBuffer: () => Promise.resolve(fakeBuffer)
     });
 
-    const messageId = 'test-msg-id';
-    const result = await getEmail(messageId);
+    const messageId = 'test@example.com';
+    const result = await getEmail('me',messageId);
 
     expect(fetch).toHaveBeenCalledWith(
       `https://graph.microsoft.com/v1.0/me/messages/${messageId}/$value`,
