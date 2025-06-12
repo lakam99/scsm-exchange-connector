@@ -105,7 +105,7 @@ async function getComment(ticketId) {
 
 async function getCompletedTickets(profile) {
   const script = path.join(__dirname, 'scripts/get-completed-tickets.ps1');
-  const result = await runPowerShell(script, ['-templateName', profile.newTicketTemplate]);
+  const result = await runPowerShell(script, ['-templateName', profile.area]);
   return result.success || [];
 }
 

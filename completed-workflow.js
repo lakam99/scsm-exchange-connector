@@ -7,6 +7,9 @@ const mustache = require('mustache');
 const config = require('./profile-config');
 const { sendEmail } = require('./mail-service');
 const { getCompletedTickets } = require('./scsm-actions');
+// At top of file
+const notifiedTicketIds = new Set(); // reset on restart
+
 
 async function notifyCompletion(profile, ticket) {
   const template = await fs.readFile(profile.completedTicketNotificationTemplatePath, 'utf8');
@@ -26,12 +29,20 @@ async function notifyCompletion(profile, ticket) {
   console.log(`📬 Notified ${ticket.AffectedUser} <${ticket.AffectedUserEmail}> for ${ticket.Id}`);
 }
 
+
 async function monitorCompletedTickets(profile) {
   const completed = await getCompletedTickets(profile);
+
   for (const ticket of completed) {
+    if (notifiedTicketIds.has(ticket.Id)) continue; // already notified
+
     await notifyCompletion(profile, ticket);
+    notifiedTicketIds.add(ticket.Id); // mark as notified
   }
 }
+
+
+
 
 function startCompletionMonitor() {
   setInterval(async () => {

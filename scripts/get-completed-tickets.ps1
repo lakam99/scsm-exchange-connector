@@ -1,40 +1,35 @@
 param(
-  [string]$templateName = "Post Awards Reconciliation Template SRQ",
-  [string]$srqtitle ='bonjour'
+  [string]$area = "Reconciliations"
 )
 
 Import-Module SMLets 2>$null
 
-$srClass = Get-SCSMClass -Name 'System.WorkItem.ServiceRequest$'
+$srClass = Get-SCSMClass -Name "System.WorkItem.ServiceRequest$"
 $completedStatus = Get-SCSMEnumeration -Name "ServiceRequestStatusEnum.Completed"
 
-# Get all Service Requests
-$serviceRequests = Get-SCSMObject -Class $srClass -Filter ""
-
-
-# Filter Service Requests by SupportGroup and CreatedDate
-$ticketsFiltered = $serviceRequests | Where-Object {
-    $_.SupportGroup -and (
-        $_.SupportGroup.DisplayName -like "*Reconciliation*" -or
-        $_.SupportGroup.DisplayName -like "*Grants*" -or
-        $_.SupportGroup.DisplayName -like "*Scolorships*" -or
-        $_.SupportGroup.DisplayName -like "*Use*"
-    )
-}
-$tickets = Get-SCSMObject -Class $srClass | Where-Object {
-  $_.TemplateName -eq $templateName -and $_.Status.Id -eq $completedStatus.Id.Guid
-}
+# Filter only completed SRQs
+$filter = "Status -eq '$($completedStatus.Id.Guid)'"
+$completedSRQs = Get-SCSMObject -Class $srClass -Filter $filter
 
 $result = @()
 
-foreach ($ticket in $tickets) {
-  $result += [PSCustomObject]@{
-    Id          = $ticket.Id.ToString()
-    Title       = $ticket.Title
-    Status      = $ticket.Status.DisplayName
-    CreatedDate = $ticket.TimeAdded
-    AffectedUser = $ticket.AffectedUser.DisplayName
-    AffectedUserEmail = $ticket.AffectedUser.UserName  # assuming it's the UPN/email
+foreach ($ticket in $completedSRQs) {
+  # Match using area in Title or custom field (adjust below as needed)
+  $affect = Get-SCSMRelationshipObject -BySource $ticket | Where-Object {
+        $_.RelationshipId -eq 'dff9be66-38b0-b6d6-6144-a412a3ebd4ce'
+     }
+     $useraffect = $affect.TargetObject
+     $user = Get-SCSMObject -Id $useraffect.Id.Guid
+     
+  if ($ticket.Area.DisplayName -like "*$area*") {
+    $result += [PSCustomObject]@{
+      Id                = $ticket.Id.ToString()
+      Title             = $ticket.Title
+      Status            = $ticket.Status.DisplayName
+      CreatedDate       = $ticket.TimeAdded
+      AffectedUser      = $user.DisplayName
+      AffectedUserEmail = $user.UPN
+    }
   }
 }
 

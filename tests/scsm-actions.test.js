@@ -1,5 +1,5 @@
 const { getUser, createUser, createTicket, updateTicketEmailAndAddComment,
-  getComment} = require('../scsm-actions.js');
+  getComment,getCompletedTickets} = require('../scsm-actions.js');
 
 // Mock child_process.execFile so that no real PowerShell runs.
 const { execFile } = require('child_process');
@@ -85,6 +85,63 @@ describe('scsm-actions module (Unit Tests)', () => {
       expect(result.created).toBe(false);
     });
   });
+
+
+  it('returns an array of tickets when success is true', async () => {
+    const fakeOutput = JSON.stringify({
+      success: [
+        { Id: 'SRQ131001', Title: 'Finished Request', Status: 'Completed' },
+        { Id: 'SRQ131002', Title: 'Another Finished Request', Status: 'Completed' }
+      ]
+    });
+
+    execFile.mockImplementation((cmd, args, callback) => {
+      callback(null, fakeOutput, '');
+    });
+
+    const profile = { area: 'Reconciliations' };
+    const result = await getCompletedTickets(profile);
+
+    expect(Array.isArray(result)).toBe(true);
+    expect(result.length).toBe(2);
+    expect(result[0]).toHaveProperty('Id', 'SRQ131001');
+    expect(result[1]).toHaveProperty('Title', 'Another Finished Request');
+  }, 10000);
+
+  it('returns an empty array when success is missing', async () => {
+    execFile.mockImplementation((cmd, args, callback) => {
+      callback(null, '{}', '');
+    });
+
+    const result = await getCompletedTickets({ area: 'Reconciliations' });
+    expect(result).toEqual([]);
+  });
+
+  it('throws error if execFile returns stderr', async () => {
+    execFile.mockImplementation((cmd, args, callback) => {
+      callback(null, '', 'PowerShell failure');
+    });
+
+    await expect(getCompletedTickets({ area: 'FailArea' })).rejects.toThrow('PowerShell failure');
+  });
+
+  it('throws error if execFile throws', async () => {
+    execFile.mockImplementation((cmd, args, callback) => {
+      callback(new Error('exec failed'), '', '');
+    });
+
+    await expect(getCompletedTickets({ area: 'FailArea' })).rejects.toThrow('exec failed');
+  });
+
+  it('throws error if stdout is invalid JSON', async () => {
+    execFile.mockImplementation((cmd, args, callback) => {
+      callback(null, 'not-json', '');
+    });
+
+    await expect(getCompletedTickets({ area: 'Corrupt' })).rejects.toThrow('Failed to parse JSON output');
+  });
+
+});
 
   describe('createTicket', () => {
     test('should return ticket object from script output', async () => {
@@ -217,4 +274,3 @@ describe('getComment()', () => {
   });
 });
 
-});

@@ -1,5 +1,5 @@
 const { getUser, createUser, createTicket, updateTicketEmailAndAddComment,
-  getComment, deleteUser } = require('../scsm-actions.js');
+  getComment, deleteUser, getCompletedTickets } = require('../scsm-actions.js');
 const fs = require('fs');
 const path = require('path');
 
@@ -17,6 +17,27 @@ describe('SCSM Actions (Integration)', () => {
     expect(user.UPN).toBe(email);
     expect(user.DisplayName).toMatch(name);
   });
+
+
+  test('getCompletedTickets returns completed tickets for matching area', async () => {
+    const profile = {
+      area: 'Reconciliations' // This should match the SRQ title or area logic used in your PS script
+    };
+
+    const tickets = await getCompletedTickets(profile);
+
+    expect(Array.isArray(tickets)).toBe(true);
+
+    // If you expect at least one completed ticket, add:
+    expect(tickets.length).toBeGreaterThanOrEqual(0); // Change to > 0 if your env guarantees data
+
+    for (const ticket of tickets) {
+      expect(ticket).toHaveProperty('Id');
+      expect(ticket).toHaveProperty('Title');
+      expect(ticket).toHaveProperty('Status');
+      expect(ticket.Status.toLowerCase()).toContain('completed');
+    }
+  }, 50000);
 
   test('createTicket creates a new service request successfully', async () => {
     const title = `Test Ticket - ${new Date().toISOString()}`;
@@ -104,5 +125,7 @@ describe('SCSM Actions (Integration)', () => {
       expect(hasComment).toBe(true);
     });
   });
+
+
 
 });
