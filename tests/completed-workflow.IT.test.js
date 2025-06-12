@@ -15,5 +15,5 @@ describe('E2E Completed Ticket Notification Workflow', () => {
     // ✅ Basic confirmation — at least one notification attempted
     expect(sendEmail).toBeDefined(); // you're not mocking, this is real
     console.log('✔️ Completed workflow ran without error.');
-  }, 50000);
+  }, 100000);
 });

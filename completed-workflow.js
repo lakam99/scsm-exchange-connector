@@ -1,12 +1,13 @@
 //7th 
 
-
+const path = require('path');
 // In workflow.js
 const fs = require('fs').promises;
 const mustache = require('mustache');
 const config = require('./profile-config');
+const fconfig = require('./config.js');
 const { sendEmail } = require('./mail-service');
-const { getCompletedTickets } = require('./scsm-actions');
+const { getCompletedTickets, attachEmailToCompletedTickets } = require('./scsm-actions');
 // At top of file
 const notifiedTicketIds = new Set(); // reset on restart
 
@@ -26,6 +27,12 @@ async function notifyCompletion(profile, ticket) {
     body
   });
 
+  const fileName = `CompletedNotification-${ticket.Id}.eml`;
+  const filePath = path.join(fconfig.tempDirectory, fileName);
+  await fs.writeFile(filePath, body); // Save rendered email content as .eml
+
+  await attachEmailToCompletedTickets(ticket.Id, filePath);
+
   console.log(`📬 Notified ${ticket.AffectedUser} <${ticket.AffectedUserEmail}> for ${ticket.Id}`);
 }
 
@@ -34,15 +41,12 @@ async function monitorCompletedTickets(profile) {
   const completed = await getCompletedTickets(profile);
 
   for (const ticket of completed) {
-    if (notifiedTicketIds.has(ticket.Id)) continue; // already notified
+    if (ticket.HasCompletedNotification) continue;
 
     await notifyCompletion(profile, ticket);
     notifiedTicketIds.add(ticket.Id); // mark as notified
   }
 }
-
-
-
 
 function startCompletionMonitor() {
   setInterval(async () => {

@@ -1,7 +1,7 @@
 #performance improved by filter using the title instead of getting all srqs
 param(
-    [string]$conversationId='AQQkADAwATM3ZmYBLTkyYzQtYmVkMi0wMAItMDAKABAA937TOesFIkOlHknZM0_Ppw==',
-    [string]$srqtitle ='[TEST-1749061622349] E2E Ticket Creation'
+    [string]$conversationId,
+    [string]$srqtitle
 
 )
 

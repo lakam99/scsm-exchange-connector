@@ -106,7 +106,16 @@ async function getComment(ticketId) {
 async function getCompletedTickets(profile) {
   const script = path.join(__dirname, 'scripts/get-completed-tickets.ps1');
   const result = await runPowerShell(script, ['-templateName', profile.area]);
-  return result.success || [];
+  return result.success;
+}
+
+async function attachEmailToCompletedTickets(Id, emailPath) {
+  const script = path.join(__dirname, 'scripts/attach-completed-email.ps1');
+  const result = await runPowerShell(script, [
+    '-Id', Id,
+    '-emailPath', emailPath
+  ]);
+  return result.success;
 }
 
 async function deleteUser(email) {
@@ -188,4 +197,5 @@ module.exports = {
   getComment,
   deleteUser,
   getCompletedTickets,
+  attachEmailToCompletedTickets
 };
